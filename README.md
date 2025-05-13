@@ -6,12 +6,43 @@ Our primary goal with v2.0 is to fully align the `did:hedera` method with W3C DI
 
 **Inside this repository, you will find:**
 
-* The **evolving specification document** for Hedera DID Method v2.0, detailing its architecture, operations, and security considerations.
-* Runnable **Proof of Concept (PoC) implementations** designed to validate key v2.0 features. These PoCs demonstrate practical application of the core mechanisms, including:
-    * Controller and multi-controller functionality.
-    * Key rotation procedures.
-    * Support for verification methods like `Multikey` and `JsonWebKey2020`.
-* The **PoC Plan** that outlines the objectives, scope, and approach for these validation efforts.
-* (Eventually) Test vectors and potentially schema definitions for v2.0.
+- The **evolving specification document** for Hedera DID Method v2.0, detailing its architecture, operations, and security considerations.
+- Runnable **Proof of Concept (PoC) implementations** designed to validate key v2.0 features. These PoCs demonstrate practical application of the core mechanisms, including:
+  - Controller and multi-controller functionality.
+  - Key rotation procedures.
+  - Support for verification methods like `Multikey` and `JsonWebKey2020`.
+- The **PoC Plan** that outlines the objectives, scope, and approach for these validation efforts.
+- (Eventually) Test vectors and potentially schema definitions for v2.0.
 
 We encourage you to explore the specification, examine the PoC plan, and run the PoC implementations (as they become available) to understand and contribute to the development of `did:hedera` v2.0.
+
+### Available Proof of Concepts (PoCs)
+
+Below you will find a list of currently available Proof of Concept (PoC) implementations included in this repository. Each PoC demonstrates and validates key features of the `did:hedera` v2.0 method.
+
+#### 1. Controller-based DID Lifecycle PoC
+
+**Location:** `src/controller.ts`
+
+**Description:**  
+This PoC demonstrates the full lifecycle of a Hedera DID using a single controller-based authorization model. It covers the following scenarios:
+
+- Creating a DID Document with a `#auth` capability invocation entry.
+- Updating the DID Document to add a new capability invocation entry `#key-2`, with the update signed by the `#auth` key.
+- Removing the `#auth` entry and services, with the update signed by the `#key-2` key.
+
+**How to Run:**
+
+1. **Install dependencies:**  
+   Make sure you have installed all required packages (see `package.json`).
+
+2. **Set up environment variables:**  
+   You need a Hedera Testnet account. Set the following environment variables:
+
+   - `HEDERA_TESTNET_ACCOUNT_ID`
+   - `HEDERA_TESTNET_PRIVATE_KEY`
+
+3. **Run the PoC:**
+   ```bash
+   npm run poc:controller
+   ```
