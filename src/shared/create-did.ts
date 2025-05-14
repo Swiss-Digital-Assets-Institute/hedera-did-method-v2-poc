@@ -31,7 +31,7 @@ export async function createDidAndPublish({
 }: CreateDidAndPublishArgs) {
   const publicKey = privateKey.publicKey;
   const pubKeyBytes = publicKey.toBytesRaw();
-  const base58btcKey = KeysUtility.fromBytes(pubKeyBytes).toMultibase("base58btc");
+  const base58btcKey = KeysUtility.fromBytes(pubKeyBytes).toBase58();
 
   const topicTx = await new TopicCreateTransaction()
     .setTopicMemo("DID v2 PoC")
