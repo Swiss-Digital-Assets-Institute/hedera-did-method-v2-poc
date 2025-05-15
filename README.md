@@ -18,20 +18,18 @@ We encourage you to explore the specification, examine the PoC plan, and run the
 
 ### Available Proof of Concepts (PoCs)
 
-Below you will find a list of currently available Proof of Concept (PoC) implementations included in this repository. Each PoC demonstrates and validates key features of the `did:hedera` v2.0 method.
+Below is a list of currently available Proof of Concept (PoC) implementations included in this repository. Each PoC demonstrates and validates key features of the `did:hedera` v2.0 method.
 
-#### 1. Controller-based DID Lifecycle PoC
+| PoC Name                                | Location                                       | Description                                                                                  | Run Command                                       |
+| --------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Create DID with Controller              | `src/create-did-with-controller.ts`            | Create a DID with a single controller and assert its initial state.                          | `npm run poc:create-did-with-controller`          |
+| Update DID with Multiple Controllers    | `src/update-did-with-multiple-controller.ts`   | Create a DID with multiple controllers, update with different controllers, and assert state. | `npm run poc:update-did-with-multiple-controller` |
+| Update DID with JWK Verification Method | `src/update-did-with-jwkVerificationMethod.ts` | Add a JWK-based verification method to a DID and assert the update.                          | `npm run poc:jwk-verification-method`             |
+| Remove Service and Method               | `src/remove-service-and-method.ts`             | Remove services and a verification method from a DID and assert the result.                  | `npm run poc:remove-service-and-method`           |
+| Deactivate DID (Self)                   | `src/deactivate-did-self.ts`                   | Deactivate a DID by its own controller and assert the DID is deactivated.                    | `npm run poc:deactivate-did-self`                 |
+| Deactivate DID (Multi-Controller)       | `src/deactivate-did-multi-controller.ts`       | Deactivate a DID with multiple controllers using one of the controllers.                     | `npm run poc:deactivate-did-multi-controller`     |
 
-**Location:** `src/controller.ts`
-
-**Description:**  
-This PoC demonstrates the full lifecycle of a Hedera DID using a single controller-based authorization model. It covers the following scenarios:
-
-- Creating a DID Document with a `#auth` capability invocation entry.
-- Updating the DID Document to add a new capability invocation entry `#key-2`, with the update signed by the `#auth` key.
-- Removing the `#auth` entry and services, with the update signed by the `#key-2` key.
-
-**How to Run:**
+#### How to Run
 
 1. **Install dependencies:**  
    Make sure you have installed all required packages (see `package.json`).
@@ -42,36 +40,13 @@ This PoC demonstrates the full lifecycle of a Hedera DID using a single controll
    - `HEDERA_TESTNET_ACCOUNT_ID`
    - `HEDERA_TESTNET_PRIVATE_KEY`
 
-3. **Run the PoC:**
+3. **Run a PoC:**
+   You can use the provided npm scripts for each PoC, for example:
    ```bash
-   npm run poc:controller
-   ```
-
-#### 2. Multi-controller-based DID Lifecycle PoC
-
-**Location:** `src/multi-controller.ts`
-
-**Description:**  
-This PoC demonstrates the lifecycle of a Hedera DID with multiple controllers. It covers the following scenarios:
-
-- Creating three independent controller DIDs.
-- Creating a new DID with all three controllers.
-- Updating the DID using a different authorized controller (adding a service entry).
-- Attempting to update the DID with a non-authorized controller (should fail to update).
-- Asserting the DID state after each operation.
-
-**How to Run:**
-
-1. **Install dependencies:**  
-   Make sure you have installed all required packages (see `package.json`).
-
-2. **Set up environment variables:**  
-   You need a Hedera Testnet account. Set the following environment variables:
-
-   - `HEDERA_TESTNET_ACCOUNT_ID`
-   - `HEDERA_TESTNET_PRIVATE_KEY`
-
-3. **Run the PoC:**
-   ```bash
-   npm run poc:multi-controller
+   npm run poc:create-did-with-controller
+   npm run poc:update-did-with-multiple-controller
+   npm run poc:jwk-verification-method
+   npm run poc:remove-service-and-method
+   npm run poc:deactivate-did-self
+   npm run poc:deactivate-did-multi-controller
    ```

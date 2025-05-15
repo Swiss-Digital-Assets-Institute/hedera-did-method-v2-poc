@@ -16,6 +16,7 @@ export async function resolveDid({ did }: ResolveDidArgs) {
 interface ParsedMessage {
   version: string;
   operation: string;
+  did: string;
   didDocument: JsonLdDIDDocument;
   proof: Proof;
 }
@@ -54,6 +55,10 @@ class DidResolver {
       } else if (operation === "update") {
         const verifiedDocument = await this.processUpdate(parsed);
         if (verifiedDocument) this.previousDidDocument = verifiedDocument;
+      } else if (operation === "deactivate") {
+        const verifiedDocument = await this.processDeactivate(parsed);
+        if (verifiedDocument) this.previousDidDocument = verifiedDocument;
+        break;
       }
     }
 
@@ -74,7 +79,7 @@ class DidResolver {
       return;
     }
 
-    if (this.did !== parsed.didDocument.id) {
+    if (this.did !== parsed.did) {
       return;
     }
 
@@ -89,7 +94,7 @@ class DidResolver {
     const verifiedDocument = await this.verifyProof(parsed, didDocument);
     if (!verifiedDocument) return null;
 
-    return verifiedDocument;
+    return verifiedDocument.document;
   }
 
   private async processUpdate(
@@ -103,13 +108,28 @@ class DidResolver {
     );
     if (!verifiedDocument) return null;
 
-    return verifiedDocument;
+    return verifiedDocument.document;
+  }
+
+  private async processDeactivate(
+    parsed: ParsedMessage
+  ): Promise<JsonLdDIDDocument | null> {
+    if (!this.previousDidDocument) return null;
+
+    const result = await this.verifyProof(parsed, this.previousDidDocument);
+    if (!result || !result.verified) return null;
+
+    return {
+      "@context": this.previousDidDocument["@context"],
+      id: this.did,
+      controller: [],
+    };
   }
 
   private async verifyProof(
     message: ParsedMessage,
     document: JsonLdDIDDocument
-  ): Promise<JsonLdDIDDocument | null> {
+  ): Promise<{ verified: boolean; document: JsonLdDIDDocument } | null> {
     const { controller } = document;
     const { verificationMethod } = message.proof;
     const verificationMethodDid = verificationMethod.split("#")[0];
@@ -143,7 +163,7 @@ class DidResolver {
 
     if (!foundedVerificationMethod) return null;
 
-    let publicKeyEntry: string;
+    let publicKeyEntry: any;
 
     if (
       foundedVerificationMethod.type === "Ed25519VerificationKey2020" &&
@@ -168,7 +188,10 @@ class DidResolver {
 
     if (!verified || !verifiedDocument) return null;
 
-    return verifiedDocument["didDocument"] as unknown as JsonLdDIDDocument;
+    return {
+      verified,
+      document: verifiedDocument["didDocument"] as unknown as JsonLdDIDDocument,
+    };
   }
 
   private findVerificationMethod(

@@ -4,11 +4,20 @@ export interface VerificationMethod {
   controller: string;
   publicKeyJwk?: {
     kty: string;
+    use?: "sig" | "enc";
     crv?: string;
-    x?: string;
-    y?: string;
-    e?: string;
-    n?: string;
+    kid?: string;
+    key_ops?: Array<
+      | "sign"
+      | "verify"
+      | "encrypt"
+      | "decrypt"
+      | "wrapKey"
+      | "unwrapKey"
+      | "deriveKey"
+      | "deriveBits"
+    >;
+
     [key: string]: any;
   };
   publicKeyMultibase?: string;

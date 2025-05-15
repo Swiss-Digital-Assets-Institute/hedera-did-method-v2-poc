@@ -6,7 +6,7 @@ import {
 } from "@hashgraph/sdk";
 import {
   KeysUtility,
-  VerificationMethodProperties,
+  RelationShipProperties,
   Service,
 } from "@swiss-digital-assets-institute/core";
 import { InternalEd25519Signer } from "./ed25519-signer";
@@ -18,7 +18,8 @@ interface CreateDidAndPublishArgs {
   controllers?: string[];
   verificationMethodId: (did: string) => string;
   partialDidDocument: (did: string) => Partial<
-    Record<VerificationMethodProperties, VerificationMethod[]> & {
+    Record<RelationShipProperties, (VerificationMethod | string)[]> & {
+      verificationMethod: VerificationMethod[];
       service: Service[];
     }
   >;
