@@ -1,7 +1,8 @@
 {
   "name": "pocs",
   "scripts": {
-    "poc:controller": "tsx --env-file .env src/controller.ts"
+    "poc:controller": "tsx --env-file .env src/controller.ts",
+    "poc:multi-controller": "tsx --env-file .env src/multi-controller.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.62.0",

@@ -15,6 +15,7 @@ import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
 interface CreateDidAndPublishArgs {
   client: Client;
   privateKey: PrivateKey;
+  controllers?: string[];
   verificationMethodId: (did: string) => string;
   partialDidDocument: (did: string) => Partial<
     Record<VerificationMethodProperties, VerificationMethod[]> & {
@@ -26,6 +27,7 @@ interface CreateDidAndPublishArgs {
 export async function createDidAndPublish({
   client,
   privateKey,
+  controllers,
   partialDidDocument,
   verificationMethodId,
 }: CreateDidAndPublishArgs) {
@@ -52,7 +54,7 @@ export async function createDidAndPublish({
       "https://w3id.org/security/suites/ed25519-2020/v1",
     ],
     id: did,
-    controller: [did],
+    controller: controllers ?? [did],
     ...partialDidDocument(did),
   };
 

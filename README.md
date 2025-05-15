@@ -46,3 +46,32 @@ This PoC demonstrates the full lifecycle of a Hedera DID using a single controll
    ```bash
    npm run poc:controller
    ```
+
+#### 2. Multi-controller-based DID Lifecycle PoC
+
+**Location:** `src/multi-controller.ts`
+
+**Description:**  
+This PoC demonstrates the lifecycle of a Hedera DID with multiple controllers. It covers the following scenarios:
+
+- Creating three independent controller DIDs.
+- Creating a new DID with all three controllers.
+- Updating the DID using a different authorized controller (adding a service entry).
+- Attempting to update the DID with a non-authorized controller (should fail to update).
+- Asserting the DID state after each operation.
+
+**How to Run:**
+
+1. **Install dependencies:**  
+   Make sure you have installed all required packages (see `package.json`).
+
+2. **Set up environment variables:**  
+   You need a Hedera Testnet account. Set the following environment variables:
+
+   - `HEDERA_TESTNET_ACCOUNT_ID`
+   - `HEDERA_TESTNET_PRIVATE_KEY`
+
+3. **Run the PoC:**
+   ```bash
+   npm run poc:multi-controller
+   ```
