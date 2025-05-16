@@ -1,105 +1,209 @@
 import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import { TopicReaderHederaClient } from "@swiss-digital-assets-institute/resolver";
 import { InternalEd25519Verifier } from "./ed25519-verifier";
-import { inspect } from "util";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
+import { Proof, SecuredDataDocument } from "./signer-types";
 
 interface ResolveDidArgs {
   did: string;
-  debug?: boolean;
 }
 
-export async function resolveDid({ did, debug }: ResolveDidArgs) {
-  const topicId = did.split("_")[1];
-  const topicReader = new TopicReaderHederaClient();
+export async function resolveDid({ did }: ResolveDidArgs) {
+  const resolver = new DidResolver(did);
+  return resolver.resolve();
+}
 
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+interface ParsedMessage {
+  version: string;
+  operation: string;
+  did: string;
+  didDocument: JsonLdDIDDocument;
+  proof: Proof;
+}
 
-  const messages = await topicReader.fetchAllToDate(topicId, "testnet");
+class DidResolver {
+  private readonly did: string;
+  private readonly topicId: string;
+  private readonly topicReader: TopicReaderHederaClient;
 
-  let previousDidDocument: JsonLdDIDDocument | null = null;
-  let currentDidDocument: JsonLdDIDDocument | null = null;
+  private previousDidDocument: JsonLdDIDDocument | null = null;
 
-  for (const message of messages) {
-    const parsed = JSON.parse(message);
-    const { version, operation, didDocument, proof } = parsed;
-    if (version !== "2.0" || !proof) continue;
+  constructor(did: string) {
+    this.did = did;
+    this.topicId = did.split("_")[1];
+    this.topicReader = new TopicReaderHederaClient();
+  }
 
-    let verificationMethodEntry: VerificationMethod | null = null;
-    let publicKeyEntry: any = null;
+  async resolve() {
+    // wait for 10s to ensure messages are available
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
-    // For 'create', use the verification method in the current didDocument
-    // For 'update', use the verification method in the previous didDocument
-    currentDidDocument =
-      operation === "create" ? didDocument : previousDidDocument;
-    if (!currentDidDocument) throw new Error("No document to check");
+    const messages = await this.topicReader.fetchAllToDate(
+      this.topicId,
+      "testnet"
+    );
 
-    // Find the verification method entry
-    const didProperties = Object.keys(currentDidDocument);
-    for (const property of didProperties) {
-      if (debug) {
-        console.log(
-          inspect(
-            {
-              property,
-              value: currentDidDocument[property],
-              verificationMethod: proof.verificationMethod,
-            },
-            { depth: null }
-          )
-        );
-      }
+    for (const message of messages) {
+      const parsed = this.parseMessage(message);
+      if (!parsed) continue;
 
-      if (property === "service") {
-        continue;
-      }
+      const { operation } = parsed;
 
-      if (!Array.isArray(currentDidDocument[property])) {
-        continue;
-      }
-
-      const foundVm = currentDidDocument[property].find(
-        (vm: VerificationMethod) => {
-          return vm.id === proof.verificationMethod;
-        }
-      );
-
-      if (foundVm) {
-        verificationMethodEntry = foundVm;
+      if (operation === "create") {
+        const verifiedDocument = await this.processCreate(parsed);
+        if (verifiedDocument) this.previousDidDocument = verifiedDocument;
+      } else if (operation === "update") {
+        const verifiedDocument = await this.processUpdate(parsed);
+        if (verifiedDocument) this.previousDidDocument = verifiedDocument;
+      } else if (operation === "deactivate") {
+        const verifiedDocument = await this.processDeactivate(parsed);
+        if (verifiedDocument) this.previousDidDocument = verifiedDocument;
         break;
       }
     }
 
-    if (!verificationMethodEntry)
-      throw new Error("No verification method entry");
+    return this.previousDidDocument;
+  }
+
+  private parseMessage(message: string) {
+    const parsed: ParsedMessage = JSON.parse(message);
+
+    const { version, operation, proof } = parsed;
+    if (version !== "2.0" || !proof) return null;
+
+    if (operation === "create" && this.previousDidDocument) {
+      return;
+    }
+
+    if (operation === "update" && !this.previousDidDocument) {
+      return;
+    }
+
+    if (this.did !== parsed.did) {
+      return;
+    }
+
+    return parsed;
+  }
+
+  private async processCreate(
+    parsed: ParsedMessage
+  ): Promise<JsonLdDIDDocument | null> {
+    const { didDocument } = parsed;
+
+    const verifiedDocument = await this.verifyProof(parsed, didDocument);
+    if (!verifiedDocument) return null;
+
+    return verifiedDocument.document;
+  }
+
+  private async processUpdate(
+    parsed: ParsedMessage
+  ): Promise<JsonLdDIDDocument | null> {
+    if (!this.previousDidDocument) return null;
+
+    const verifiedDocument = await this.verifyProof(
+      parsed,
+      this.previousDidDocument
+    );
+    if (!verifiedDocument) return null;
+
+    return verifiedDocument.document;
+  }
+
+  private async processDeactivate(
+    parsed: ParsedMessage
+  ): Promise<JsonLdDIDDocument | null> {
+    if (!this.previousDidDocument) return null;
+
+    const result = await this.verifyProof(parsed, this.previousDidDocument);
+    if (!result || !result.verified) return null;
+
+    return {
+      "@context": this.previousDidDocument["@context"],
+      id: this.did,
+      controller: [],
+    };
+  }
+
+  private async verifyProof(
+    message: ParsedMessage,
+    document: JsonLdDIDDocument
+  ): Promise<{ verified: boolean; document: JsonLdDIDDocument } | null> {
+    const { controller } = document;
+    const { verificationMethod } = message.proof;
+    const verificationMethodDid = verificationMethod.split("#")[0];
+
+    if (!controller.includes(verificationMethodDid)) {
+      return null;
+    }
+
+    let foundedVerificationMethod: VerificationMethod | null = null;
+
+    // Self-controlled document
+    if (verificationMethodDid === this.did) {
+      // find the verification method in the document
+      foundedVerificationMethod = this.findVerificationMethod(
+        document,
+        verificationMethod
+      );
+    } else {
+      // Controlled by 3rd party
+      const resolvedController = await resolveDid({
+        did: verificationMethodDid,
+      });
+
+      if (!resolvedController) return null;
+
+      foundedVerificationMethod = this.findVerificationMethod(
+        resolvedController,
+        verificationMethod
+      );
+    }
+
+    if (!foundedVerificationMethod) return null;
+
+    let publicKeyEntry: any;
 
     if (
-      verificationMethodEntry.type === "Ed25519VerificationKey2020" &&
-      verificationMethodEntry.publicKeyMultibase
+      foundedVerificationMethod.type === "Ed25519VerificationKey2020" &&
+      foundedVerificationMethod.publicKeyMultibase
     ) {
       publicKeyEntry = KeysUtility.fromMultibase(
-        verificationMethodEntry.publicKeyMultibase
+        foundedVerificationMethod.publicKeyMultibase
       ).toDerString();
     } else if (
-      verificationMethodEntry.type === "JsonWebKey2020" &&
-      verificationMethodEntry.publicKeyJwk
+      foundedVerificationMethod.type === "JsonWebKey2020" &&
+      foundedVerificationMethod.publicKeyJwk
     ) {
-      publicKeyEntry = verificationMethodEntry.publicKeyJwk;
+      publicKeyEntry = foundedVerificationMethod.publicKeyJwk;
     } else {
       throw new Error("Invalid verification method");
     }
 
-    let verifier = new InternalEd25519Verifier(publicKeyEntry);
+    const verifier = new InternalEd25519Verifier(publicKeyEntry);
+    const { verified, verifiedDocument } = await verifier.verifyProof(
+      message as unknown as SecuredDataDocument
+    );
 
-    // Verify the proof
-    const { verified, verifiedDocument } = await verifier.verifyProof(parsed);
-    if (!verified || !verifiedDocument)
-      throw new Error("Proof verification failed");
+    if (!verified || !verifiedDocument) return null;
 
-    previousDidDocument =
-      verifiedDocument.didDocument as unknown as JsonLdDIDDocument;
-    currentDidDocument =
-      verifiedDocument.didDocument as unknown as JsonLdDIDDocument;
+    return {
+      verified,
+      document: verifiedDocument["didDocument"] as unknown as JsonLdDIDDocument,
+    };
   }
-  return currentDidDocument;
+
+  private findVerificationMethod(
+    didDocument: JsonLdDIDDocument,
+    verificationMethodId: string
+  ): VerificationMethod | null {
+    for (const vm of didDocument.capabilityInvocation ?? []) {
+      if (typeof vm !== "object" || !("id" in vm)) continue;
+
+      if (vm.id === verificationMethodId) return vm;
+    }
+
+    return null;
+  }
 }
