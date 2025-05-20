@@ -1,9 +1,16 @@
 import { Client, PrivateKey } from "@hashgraph/sdk";
 import { KeysUtility } from "@swiss-digital-assets-institute/core";
+import assert from "assert";
 import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { deactivateDidAndPublish } from "./shared/deactivate-did";
-import assert from "assert";
+
+interface Controller {
+  did: string;
+  privateKey: PrivateKey;
+  verificationMethodId: string;
+  publicKeyMultibase: string;
+}
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -11,89 +18,110 @@ async function run() {
     process.env.HEDERA_TESTNET_PRIVATE_KEY ?? ""
   );
 
-  // Create 3 controllers
-  const controllers: {
-    did: string;
-    privateKey: PrivateKey;
-    publicKeyMultibase: string;
-  }[] = [];
-  for (let i = 0; i < 3; i++) {
-    const privateKey = PrivateKey.generateED25519();
-    const publicKey = privateKey.publicKey;
-    const publicKeyMultibase = KeysUtility.fromBytes(
-      publicKey.toBytesRaw()
-    ).toMultibase();
-    controllers.push({
-      did: undefined as any, // will be set after creation
-      privateKey,
-      publicKeyMultibase,
-    });
-  }
+  // 1. Create DID controller
+  const controllerPrivateKey = PrivateKey.generateED25519();
+  const controllerPublicKey = controllerPrivateKey.publicKey;
+  const controllerPublicKeyMultibase = KeysUtility.fromBytes(
+    controllerPublicKey.toBytesRaw()
+  ).toMultibase();
 
-  // Publish controller DIDs
-  for (const c of controllers) {
-    const { did } = await createDidAndPublish({
-      client,
-      privateKey: c.privateKey,
-      partialDidDocument: (did) => ({
-        capabilityInvocation: [
-          {
-            id: `${did}#auth`,
-            type: "Ed25519VerificationKey2020",
-            controller: did,
-            publicKeyMultibase: c.publicKeyMultibase,
-          },
-        ],
-      }),
-      verificationMethodId: (did) => `${did}#auth`,
-    });
-    c.did = did;
-  }
-
-  // Create a DID with all controllers
-  const mainPrivateKey = controllers[0].privateKey;
-  const { did, topicId } = await createDidAndPublish({
+  const { did: controllerDid } = await createDidAndPublish({
     client,
-    privateKey: mainPrivateKey,
-    controllers: controllers.map((c) => c.did),
+    privateKey: controllerPrivateKey,
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
           id: `${did}#auth`,
           type: "Ed25519VerificationKey2020",
           controller: did,
-          publicKeyMultibase: controllers[0].publicKeyMultibase,
+          publicKeyMultibase: controllerPublicKeyMultibase,
         },
       ],
     }),
-    verificationMethodId: (did) => `${controllers[0].did}#auth`,
+    verificationMethodId: (did) => `${did}#auth`,
   });
 
-  // Deactivate DID using the second controller
-  await deactivateDidAndPublish({
+  // 2. Create a DID to be deactivated
+  const privateKey = PrivateKey.generateED25519();
+  const publicKey = privateKey.publicKey;
+  const publicKeyMultibase = KeysUtility.fromBytes(
+    publicKey.toBytesRaw()
+  ).toMultibase();
+
+  const { did: didWithControllers, topicId } = await createDidAndPublish({
     client,
-    did,
-    topicId,
-    privateKey: controllers[1].privateKey,
-    verificationMethodId: `${controllers[1].did}#auth`,
+    privateKey: controllerPrivateKey,
+    controllers: [controllerDid],
+    partialDidDocument: (did) => ({
+      verificationMethod: [
+        {
+          id: `${did}#key-1`,
+          type: "Ed25519VerificationKey2020",
+          controller: did,
+          publicKeyMultibase,
+        },
+      ],
+      capabilityInvocation: [
+        {
+          id: `${did}#controller`,
+          type: "Ed25519VerificationKey2020",
+          controller: controllerDid,
+          publicKeyMultibase: controllerPublicKeyMultibase,
+        },
+      ],
+    }),
+    verificationMethodId: (did) => `${did}#controller`,
   });
 
-  // Assert deactivated
-  const didState = await resolveDid({ did });
-  assert.deepStrictEqual(didState, {
+  const firstDidState = await resolveDid({ did: didWithControllers });
+  assert.deepStrictEqual(firstDidState, {
     "@context": [
       "https://www.w3.org/ns/did/v1",
       "https://w3id.org/security/suites/ed25519-2020/v1",
     ],
-    id: did,
+    id: didWithControllers,
+    controller: [controllerDid],
+    verificationMethod: [
+      {
+        id: `${didWithControllers}#key-1`,
+        type: "Ed25519VerificationKey2020",
+        controller: didWithControllers,
+        publicKeyMultibase,
+      },
+    ],
+    capabilityInvocation: [
+      {
+        id: `${didWithControllers}#controller`,
+        type: "Ed25519VerificationKey2020",
+        controller: controllerDid,
+        publicKeyMultibase: controllerPublicKeyMultibase,
+      },
+    ],
+  });
+
+  // 3. Updating the DID with the second controller
+  await deactivateDidAndPublish({
+    client,
+    did: didWithControllers,
+    topicId,
+    privateKey: controllerPrivateKey,
+    verificationMethodId: `${didWithControllers}#controller`,
+  });
+
+  const secondDidState = await resolveDid({ did: didWithControllers });
+  assert.deepStrictEqual(secondDidState, {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/suites/ed25519-2020/v1",
+    ],
+    id: didWithControllers,
     controller: [],
   });
 
   console.log("===== Results =====");
   console.log("Status: success");
-  console.log("DID: ", did);
+  console.log("DID: ", didWithControllers);
   console.log("Topic ID: ", topicId);
-  console.log("Deactivated state: ", didState);
   client.close();
 }
 

@@ -20,14 +20,14 @@ We encourage you to explore the specification, examine the PoC plan, and run the
 
 Below is a list of currently available Proof of Concept (PoC) implementations included in this repository. Each PoC demonstrates and validates key features of the `did:hedera` v2.0 method.
 
-| PoC Name                                | Location                                       | Description                                                                                  | Run Command                                       |
-| --------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Create DID with Controller              | `src/create-did-with-controller.ts`            | Create a DID with a single controller and assert its initial state.                          | `npm run poc:create-did-with-controller`          |
-| Update DID with Multiple Controllers    | `src/update-did-with-multiple-controller.ts`   | Create a DID with multiple controllers, update with different controllers, and assert state. | `npm run poc:update-did-with-multiple-controller` |
-| Update DID with JWK Verification Method | `src/update-did-with-jwkVerificationMethod.ts` | Add a JWK-based verification method to a DID and assert the update.                          | `npm run poc:jwk-verification-method`             |
-| Remove Service and Method               | `src/remove-service-and-method.ts`             | Remove services and a verification method from a DID and assert the result.                  | `npm run poc:remove-service-and-method`           |
-| Deactivate DID (Self)                   | `src/deactivate-did-self.ts`                   | Deactivate a DID by its own controller and assert the DID is deactivated.                    | `npm run poc:deactivate-did-self`                 |
-| Deactivate DID (Multi-Controller)       | `src/deactivate-did-multi-controller.ts`       | Deactivate a DID with multiple controllers using one of the controllers.                     | `npm run poc:deactivate-did-multi-controller`     |
+| PoC Name                                | Location                                         | Description                                                                                  | Run Command                                       |
+| --------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Create DID with Controller              | `src/create-did-with-controller.ts`              | Create a DID with a single controller and assert its initial state.                          | `npm run poc:create-did-with-controller`          |
+| Update DID with Multiple Controllers    | `src/update-did-with-multiple-controller.ts`     | Create a DID with multiple controllers, update with different controllers, and assert state. | `npm run poc:update-did-with-multiple-controller` |
+| Update DID with JWK Verification Method | `src/update-did-with-jwk-verification-method.ts` | Add a JWK-based verification method to a DID and assert the update.                          | `npm run poc:jwk-verification-method`             |
+| Remove Service and Method               | `src/remove-service-and-method.ts`               | Remove services and a verification method from a DID and assert the result.                  | `npm run poc:remove-service-and-method`           |
+| Deactivate DID (Self)                   | `src/deactivate-did-self.ts`                     | Deactivate a DID by its own controller and assert the DID is deactivated.                    | `npm run poc:deactivate-did-self`                 |
+| Deactivate DID (Multi-Controller)       | `src/deactivate-did-multi-controller.ts`         | Deactivate a DID with multiple controllers using one of the controllers.                     | `npm run poc:deactivate-did-multi-controller`     |
 
 #### How to Run
 

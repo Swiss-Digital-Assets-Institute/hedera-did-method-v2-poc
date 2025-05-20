@@ -32,9 +32,10 @@ export async function createDidAndPublish({
   partialDidDocument,
   verificationMethodId,
 }: CreateDidAndPublishArgs) {
-  const publicKey = privateKey.publicKey;
-  const pubKeyBytes = publicKey.toBytesRaw();
-  const base58btcKey = KeysUtility.fromBytes(pubKeyBytes).toBase58();
+  const identifierPrivateKey = PrivateKey.generateED25519();
+  const identifierBase58btcKey = KeysUtility.fromPublicKey(
+    identifierPrivateKey.publicKey
+  ).toBase58();
 
   const topicTx = await new TopicCreateTransaction()
     .setTopicMemo("DID v2 PoC")
@@ -47,7 +48,7 @@ export async function createDidAndPublish({
   }
 
   const network = "testnet";
-  const did = `did:hedera:${network}:${base58btcKey}_${topicId}`;
+  const did = `did:hedera:${network}:${identifierBase58btcKey}_${topicId}`;
 
   const didDocument: JsonLdDIDDocument = {
     "@context": [

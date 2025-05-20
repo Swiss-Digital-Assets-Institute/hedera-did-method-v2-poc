@@ -3,6 +3,7 @@ import { TopicReaderHederaClient } from "@swiss-digital-assets-institute/resolve
 import { InternalEd25519Verifier } from "./ed25519-verifier";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
 import { Proof, SecuredDataDocument } from "./signer-types";
+import { inspect } from "util";
 
 interface ResolveDidArgs {
   did: string;
@@ -130,38 +131,26 @@ class DidResolver {
     message: ParsedMessage,
     document: JsonLdDIDDocument
   ): Promise<{ verified: boolean; document: JsonLdDIDDocument } | null> {
-    const { controller } = document;
     const { verificationMethod } = message.proof;
     const verificationMethodDid = verificationMethod.split("#")[0];
 
-    if (!controller.includes(verificationMethodDid)) {
+    if (verificationMethodDid !== this.did) {
       return null;
     }
 
-    let foundedVerificationMethod: VerificationMethod | null = null;
+    const foundedVerificationMethod = this.findVerificationMethod(
+      document,
+      verificationMethod
+    );
 
-    // Self-controlled document
-    if (verificationMethodDid === this.did) {
-      // find the verification method in the document
-      foundedVerificationMethod = this.findVerificationMethod(
-        document,
-        verificationMethod
-      );
-    } else {
-      // Controlled by 3rd party
-      const resolvedController = await resolveDid({
-        did: verificationMethodDid,
-      });
-
-      if (!resolvedController) return null;
-
-      foundedVerificationMethod = this.findVerificationMethod(
-        resolvedController,
-        verificationMethod
-      );
+    if (!foundedVerificationMethod) {
+      return null;
     }
 
-    if (!foundedVerificationMethod) return null;
+    // Check if the verification method is from one of the DID controllers
+    if (!document.controller.includes(foundedVerificationMethod.controller)) {
+      return null;
+    }
 
     let publicKeyEntry: any;
 
@@ -186,7 +175,9 @@ class DidResolver {
       message as unknown as SecuredDataDocument
     );
 
-    if (!verified || !verifiedDocument) return null;
+    if (!verified || !verifiedDocument) {
+      return null;
+    }
 
     return {
       verified,
