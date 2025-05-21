@@ -30,6 +30,8 @@ Below is a list of currently available Proof of Concept (PoC) implementations in
 | Deactivate DID (Multi-Controller)       | `src/deactivate-did-multi-controller.ts`         | Deactivate a DID with multiple controllers using one of the controllers.                             | `npm run poc:deactivate-did-multi-controller`     |
 | DID Controller Key Rotation             | `src/did-controller-key-rotation.ts`             | Demonstrates rotating the controller's key for a DID and making updates with the new controller key. | `npm run poc:did-controller-key-rotation`         |
 | DID Key Rotation                        | `src/did-key-rotation.ts`                        | Demonstrates rotating the main authentication key for a DID and making updates with the new key.     | `npm run poc:did-key-rotation`                    |
+| Embedded DID Controller                 | `src/embedded-did-controller.ts`                 | Demonstrates a DID where the controller's verification method is embedded in the DID document.       | `npm run poc:embedded-did-controller`             |
+| Referenced DID Controller               | `src/referenced-did-controller.ts`               | Demonstrates a DID where the controller's verification method is referenced from another DID.        | `npm run poc:referenced-did-controller`           |
 
 #### How to Run
 
@@ -53,4 +55,6 @@ Below is a list of currently available Proof of Concept (PoC) implementations in
    npm run poc:deactivate-did-multi-controller
    npm run poc:did-controller-key-rotation
    npm run poc:did-key-rotation
+   npm run poc:embedded-did-controller
+   npm run poc:referenced-did-controller
    ```

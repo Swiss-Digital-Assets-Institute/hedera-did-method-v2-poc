@@ -8,7 +8,9 @@
     "poc:deactivate-did-self": "tsx --env-file .env src/deactivate-did-self.ts",
     "poc:deactivate-did-multi-controller": "tsx --env-file .env src/deactivate-did-multi-controller.ts",
     "poc:did-key-rotation": "tsx --env-file .env src/did-key-rotation.ts",
-    "poc:did-controller-key-rotation": "tsx --env-file .env src/did-controller-key-rotation.ts"
+    "poc:did-controller-key-rotation": "tsx --env-file .env src/did-controller-key-rotation.ts",
+    "poc:referenced-did-controller": "tsx --env-file .env src/referenced-did-controller.ts",
+    "poc:embedded-did-controller": "tsx --env-file .env src/embedded-did-controller.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.62.0",

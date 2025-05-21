@@ -3,14 +3,14 @@ import { TopicReaderHederaClient } from "@swiss-digital-assets-institute/resolve
 import { InternalEd25519Verifier } from "./ed25519-verifier";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
 import { Proof, SecuredDataDocument } from "./signer-types";
-import { inspect } from "util";
 
 interface ResolveDidArgs {
   did: string;
+  timestamp?: number;
 }
 
-export async function resolveDid({ did }: ResolveDidArgs) {
-  const resolver = new DidResolver(did);
+export async function resolveDid({ did, timestamp }: ResolveDidArgs) {
+  const resolver = new DidResolver(did, timestamp);
   return resolver.resolve();
 }
 
@@ -26,23 +26,27 @@ class DidResolver {
   private readonly did: string;
   private readonly topicId: string;
   private readonly topicReader: TopicReaderHederaClient;
+  private readonly timestamp?: number;
 
   private previousDidDocument: JsonLdDIDDocument | null = null;
 
-  constructor(did: string) {
+  constructor(did: string, timestamp?: number) {
     this.did = did;
     this.topicId = did.split("_")[1];
     this.topicReader = new TopicReaderHederaClient();
+    this.timestamp = timestamp;
   }
 
   async resolve() {
     // wait for 10s to ensure messages are available
     await new Promise((resolve) => setTimeout(resolve, 10000));
 
-    const messages = await this.topicReader.fetchAllToDate(
-      this.topicId,
-      "testnet"
-    );
+    let messages = this.timestamp
+      ? await this.topicReader.fetchFrom(this.topicId, "testnet", {
+          from: 0,
+          to: this.timestamp,
+        })
+      : await this.topicReader.fetchAllToDate(this.topicId, "testnet");
 
     for (const message of messages) {
       const parsed = this.parseMessage(message);
@@ -134,12 +138,32 @@ class DidResolver {
     const { verificationMethod } = message.proof;
     const verificationMethodDid = verificationMethod.split("#")[0];
 
+    let didDocumentToSearch = document;
+
     if (verificationMethodDid !== this.did) {
-      return null;
+      if (!document.controller.includes(verificationMethodDid)) {
+        return null;
+      }
+
+      if (!document.capabilityInvocation?.includes(verificationMethod)) {
+        return null;
+      }
+
+      const proofTimestamp = new Date(message.proof.created).getTime();
+      const resolvedControllerDoc = await resolveDid({
+        did: verificationMethodDid,
+        timestamp: proofTimestamp,
+      });
+
+      if (!resolvedControllerDoc) {
+        return null;
+      }
+
+      didDocumentToSearch = resolvedControllerDoc;
     }
 
     const foundedVerificationMethod = this.findVerificationMethod(
-      document,
+      didDocumentToSearch,
       verificationMethod
     );
 
@@ -148,7 +172,11 @@ class DidResolver {
     }
 
     // Check if the verification method is from one of the DID controllers
-    if (!document.controller.includes(foundedVerificationMethod.controller)) {
+    if (
+      !didDocumentToSearch.controller.includes(
+        foundedVerificationMethod.controller
+      )
+    ) {
       return null;
     }
 
