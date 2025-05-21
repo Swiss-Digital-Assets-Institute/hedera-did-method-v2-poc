@@ -6,7 +6,9 @@
     "poc:create-did-with-controller": "tsx --env-file .env src/create-did-with-controller.ts",
     "poc:update-did-with-multiple-controller": "tsx --env-file .env src/update-did-with-multiple-controller.ts",
     "poc:deactivate-did-self": "tsx --env-file .env src/deactivate-did-self.ts",
-    "poc:deactivate-did-multi-controller": "tsx --env-file .env src/deactivate-did-multi-controller.ts"
+    "poc:deactivate-did-multi-controller": "tsx --env-file .env src/deactivate-did-multi-controller.ts",
+    "poc:did-key-rotation": "tsx --env-file .env src/did-key-rotation.ts",
+    "poc:did-controller-key-rotation": "tsx --env-file .env src/did-controller-key-rotation.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.62.0",
