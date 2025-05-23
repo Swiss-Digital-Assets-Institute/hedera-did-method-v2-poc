@@ -17,7 +17,7 @@ async function run() {
   ).toMultibase();
 
   // 1. Create DID
-  const { did, topicId, didDocument } = await createDidAndPublish({
+  const { did, topicId } = await createDidAndPublish({
     client,
     privateKey: authPrivateKey,
     partialDidDocument: (did) => ({

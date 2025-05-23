@@ -3,14 +3,7 @@ import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import assert from "assert";
 import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
-import { deactivateDidAndPublish } from "./shared/deactivate-did";
-
-interface Controller {
-  did: string;
-  privateKey: PrivateKey;
-  verificationMethodId: string;
-  publicKeyMultibase: string;
-}
+import { updateDidAndPublish } from "./shared/update-did";
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -20,9 +13,8 @@ async function run() {
 
   // 1. Create DID controller
   const controllerPrivateKey = PrivateKey.generateED25519();
-  const controllerPublicKey = controllerPrivateKey.publicKey;
-  const controllerPublicKeyMultibase = KeysUtility.fromBytes(
-    controllerPublicKey.toBytesRaw()
+  const controllerPublicKeyMultibase = KeysUtility.fromPublicKey(
+    controllerPrivateKey.publicKey
   ).toMultibase();
 
   const { did: controllerDid } = await createDidAndPublish({
@@ -41,57 +33,35 @@ async function run() {
     verificationMethodId: (did) => `${did}#auth`,
   });
 
-  // 2. Create a DID to be deactivated
-  const privateKey = PrivateKey.generateED25519();
-  const publicKey = privateKey.publicKey;
-  const publicKeyMultibase = KeysUtility.fromBytes(
-    publicKey.toBytesRaw()
-  ).toMultibase();
-
-  const { did: didWithControllers, topicId } = await createDidAndPublish({
+  // 2. Create a DID with the controller
+  const { did: subjectDid, topicId } = await createDidAndPublish({
     client,
     privateKey: controllerPrivateKey,
     controllers: [controllerDid],
     partialDidDocument: (did) => ({
-      verificationMethod: [
-        {
-          id: `${did}#key-1`,
-          type: "Ed25519VerificationKey2020",
-          controller: did,
-          publicKeyMultibase,
-        },
-      ],
       capabilityInvocation: [
         {
-          id: `${did}#controller`,
+          id: `${did}#controller-0`,
           type: "Ed25519VerificationKey2020",
           controller: controllerDid,
           publicKeyMultibase: controllerPublicKeyMultibase,
         },
       ],
     }),
-    verificationMethodId: (did) => `${did}#controller`,
+    verificationMethodId: (did) => `${did}#controller-0`,
   });
 
-  const firstDidState = await resolveDid({ did: didWithControllers });
+  const firstDidState = await resolveDid({ did: subjectDid });
   assert.deepStrictEqual(firstDidState, {
     "@context": [
       "https://www.w3.org/ns/did/v1",
       "https://w3id.org/security/suites/ed25519-2020/v1",
     ],
-    id: didWithControllers,
+    id: subjectDid,
     controller: [controllerDid],
-    verificationMethod: [
-      {
-        id: `${didWithControllers}#key-1`,
-        type: "Ed25519VerificationKey2020",
-        controller: didWithControllers,
-        publicKeyMultibase,
-      },
-    ],
     capabilityInvocation: [
       {
-        id: `${didWithControllers}#controller`,
+        id: `${subjectDid}#controller-0`,
         type: "Ed25519VerificationKey2020",
         controller: controllerDid,
         publicKeyMultibase: controllerPublicKeyMultibase,
@@ -100,27 +70,55 @@ async function run() {
   });
 
   // 3. Updating the DID with the second controller
-  await deactivateDidAndPublish({
+  await updateDidAndPublish({
     client,
-    did: didWithControllers,
+    did: subjectDid,
     topicId,
     privateKey: controllerPrivateKey,
-    verificationMethodId: `${didWithControllers}#controller`,
+    verificationMethodId: `${subjectDid}#controller-0`,
+    didDocument: firstDidState,
+    updateFn: (doc) => {
+      return {
+        ...doc,
+        service: [
+          {
+            id: `${doc.id}#service`,
+            type: "LinkedDomains",
+            serviceEndpoint: "https://example.com/did",
+          },
+        ],
+      };
+    },
   });
 
-  const secondDidState = await resolveDid({ did: didWithControllers });
+  const secondDidState = await resolveDid({ did: subjectDid });
   assert.deepStrictEqual(secondDidState, {
     "@context": [
       "https://www.w3.org/ns/did/v1",
       "https://w3id.org/security/suites/ed25519-2020/v1",
     ],
-    id: didWithControllers,
-    controller: [],
+    id: subjectDid,
+    controller: [controllerDid],
+    service: [
+      {
+        id: `${subjectDid}#service`,
+        type: "LinkedDomains",
+        serviceEndpoint: "https://example.com/did",
+      },
+    ],
+    capabilityInvocation: [
+      {
+        id: `${subjectDid}#controller-0`,
+        type: "Ed25519VerificationKey2020",
+        controller: controllerDid,
+        publicKeyMultibase: controllerPublicKeyMultibase,
+      },
+    ],
   });
 
   console.log("===== Results =====");
   console.log("Status: success");
-  console.log("DID: ", didWithControllers);
+  console.log("DID: ", subjectDid);
   console.log("Topic ID: ", topicId);
   client.close();
 }

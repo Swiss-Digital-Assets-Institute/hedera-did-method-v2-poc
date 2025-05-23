@@ -10,6 +10,7 @@ interface Controller {
   did: string;
   privateKey: PrivateKey;
   verificationMethodId: string;
+  publicKeyMultibase: string;
 }
 
 async function run() {
@@ -48,6 +49,7 @@ async function run() {
       did,
       privateKey,
       verificationMethodId: `${did}#auth`,
+      publicKeyMultibase,
     });
   }
 
@@ -71,8 +73,14 @@ async function run() {
           publicKeyMultibase: publicKeyMultibase1,
         },
       ],
+      capabilityInvocation: controllers.map((c, index) => ({
+        id: `${did}#controller-${index}`,
+        type: "Ed25519VerificationKey2020",
+        controller: c.did,
+        publicKeyMultibase: c.publicKeyMultibase,
+      })),
     }),
-    verificationMethodId: () => controllers[0].verificationMethodId,
+    verificationMethodId: (did) => `${did}#controller-0`,
   });
 
   const firstDidState = await resolveDid({ did: didWithControllers });
@@ -91,6 +99,12 @@ async function run() {
         publicKeyMultibase: publicKeyMultibase1,
       },
     ],
+    capabilityInvocation: controllers.map((c, index) => ({
+      id: `${didWithControllers}#controller-${index}`,
+      type: "Ed25519VerificationKey2020",
+      controller: c.did,
+      publicKeyMultibase: c.publicKeyMultibase,
+    })),
   });
 
   // 3. Updating the DID with the second controller
@@ -99,7 +113,7 @@ async function run() {
     did: didWithControllers,
     topicId,
     privateKey: controllers[1].privateKey,
-    verificationMethodId: controllers[1].verificationMethodId,
+    verificationMethodId: `${didWithControllers}#controller-1`,
     didDocument: firstDidState,
     updateFn: (doc) => {
       return {
@@ -138,6 +152,12 @@ async function run() {
         serviceEndpoint: "https://example.com/did",
       },
     ],
+    capabilityInvocation: controllers.map((c, index) => ({
+      id: `${didWithControllers}#controller-${index}`,
+      type: "Ed25519VerificationKey2020",
+      controller: c.did,
+      publicKeyMultibase: c.publicKeyMultibase,
+    })),
   });
 
   // 4. Updating controller by not authorized controller
@@ -147,7 +167,7 @@ async function run() {
     notAuthorizedPublicKey.toBytesRaw()
   ).toMultibase();
 
-  const { did: notAuthorizedDid } = await createDidAndPublish({
+  await createDidAndPublish({
     client,
     privateKey: notAuthorizedPrivateKey,
     partialDidDocument: (did) => ({
@@ -168,7 +188,7 @@ async function run() {
     did: didWithControllers,
     topicId,
     privateKey: notAuthorizedPrivateKey,
-    verificationMethodId: notAuthorizedDid,
+    verificationMethodId: `${didWithControllers}#controller-1`,
     didDocument: secondDidState,
     updateFn: (doc) => {
       return {
@@ -209,6 +229,12 @@ async function run() {
         serviceEndpoint: "https://example.com/did",
       },
     ],
+    capabilityInvocation: controllers.map((c, index) => ({
+      id: `${didWithControllers}#controller-${index}`,
+      type: "Ed25519VerificationKey2020",
+      controller: c.did,
+      publicKeyMultibase: c.publicKeyMultibase,
+    })),
   });
 
   console.log("===== Results =====");

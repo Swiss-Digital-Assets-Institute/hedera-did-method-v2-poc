@@ -1,14 +1,16 @@
 {
   "name": "pocs",
   "scripts": {
-    "poc:controller": "tsx --env-file .env src/controller.ts",
-    "poc:multi-controller": "tsx --env-file .env src/multi-controller.ts",
-    "poc:jwk-verification-method": "tsx --env-file .env src/update-did-with-jwkVerificationMethod.ts",
+    "poc:jwk-verification-method": "tsx --env-file .env src/update-did-with-jwk-verification-method.ts",
     "poc:remove-service-and-method": "tsx --env-file .env src/remove-service-and-method.ts",
     "poc:create-did-with-controller": "tsx --env-file .env src/create-did-with-controller.ts",
     "poc:update-did-with-multiple-controller": "tsx --env-file .env src/update-did-with-multiple-controller.ts",
     "poc:deactivate-did-self": "tsx --env-file .env src/deactivate-did-self.ts",
-    "poc:deactivate-did-multi-controller": "tsx --env-file .env src/deactivate-did-multi-controller.ts"
+    "poc:deactivate-did-multi-controller": "tsx --env-file .env src/deactivate-did-multi-controller.ts",
+    "poc:did-key-rotation": "tsx --env-file .env src/did-key-rotation.ts",
+    "poc:did-controller-key-rotation": "tsx --env-file .env src/did-controller-key-rotation.ts",
+    "poc:referenced-did-controller": "tsx --env-file .env src/referenced-did-controller.ts",
+    "poc:embedded-did-controller": "tsx --env-file .env src/embedded-did-controller.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.62.0",
