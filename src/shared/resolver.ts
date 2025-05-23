@@ -6,11 +6,11 @@ import { Proof, SecuredDataDocument } from "./signer-types";
 
 interface ResolveDidArgs {
   did: string;
-  timestamp?: number;
+  versionTime?: string;
 }
 
-export async function resolveDid({ did, timestamp }: ResolveDidArgs) {
-  const resolver = new DidResolver(did, timestamp);
+export async function resolveDid({ did, versionTime }: ResolveDidArgs) {
+  const resolver = new DidResolver(did, versionTime);
   return resolver.resolve();
 }
 
@@ -26,25 +26,25 @@ class DidResolver {
   private readonly did: string;
   private readonly topicId: string;
   private readonly topicReader: TopicReaderHederaClient;
-  private readonly timestamp?: number;
+  private readonly versionTime?: string;
 
   private previousDidDocument: JsonLdDIDDocument | null = null;
 
-  constructor(did: string, timestamp?: number) {
+  constructor(did: string, versionTime?: string) {
     this.did = did;
     this.topicId = did.split("_")[1];
     this.topicReader = new TopicReaderHederaClient();
-    this.timestamp = timestamp;
+    this.versionTime = versionTime;
   }
 
   async resolve() {
     // wait for 10s to ensure messages are available
     await new Promise((resolve) => setTimeout(resolve, 10000));
 
-    let messages = this.timestamp
+    let messages = this.versionTime
       ? await this.topicReader.fetchFrom(this.topicId, "testnet", {
           from: 0,
-          to: this.timestamp,
+          to: new Date(this.versionTime).getTime(),
         })
       : await this.topicReader.fetchAllToDate(this.topicId, "testnet");
 
@@ -152,7 +152,7 @@ class DidResolver {
       const proofTimestamp = new Date(message.proof.created).getTime();
       const resolvedControllerDoc = await resolveDid({
         did: verificationMethodDid,
-        timestamp: proofTimestamp,
+        versionTime: new Date(proofTimestamp).toISOString(),
       });
 
       if (!resolvedControllerDoc) {
