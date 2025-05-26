@@ -4,6 +4,24 @@
 
 This document details the Proof-of-Concept (PoC) plan for validating crucial features of the Hedera DID Method v2.0 specification. The focus is on the **controller and proof model**, **key rotation**, and **specified verification methods**. It outlines the PoC's objectives, scope, technical approach, and validation methodology.
 
+### Available PoCs
+
+The following PoCs are available for testing and validation:
+
+1. **Basic Controller Operations**
+   - `npm run poc:controller` - Basic single-controller DID operations
+   - `npm run poc:create-did-with-controller` - DID creation with a single controller
+   - `npm run poc:remove-service-and-method` - Updating a DID by removing services and verification methods
+   - `npm run poc:deactivate-did-self` - Deactivating a DID by its own controller
+
+2. **Multi-Controller Operations**
+   - `npm run poc:multi-controller` - Basic multi-controller DID operations
+   - `npm run poc:update-did-with-multiple-controller` - DID creation and updates with multiple controllers
+   - `npm run poc:deactivate-did-multi-controller` - Deactivating a DID with multiple controllers
+
+3. **Verification Methods**
+   - `npm run poc:jwk-verification-method` - Adding a JWK-based verification method
+
 ### Objectives
 
 1.  **Validate the Controller and Proof Model**: Ensure the DID method supports single and multi-controller operations with enforceable permissions.
@@ -57,9 +75,10 @@ This PoC will validate the following Hedera DID Method v2.0 features:
       * DID resolves to the correct document post-update.
       * Updates are cryptographically signed by the controller.
   - **Relevant PoC(s)**:
-      * [`Create DID with Controller`](https://www.google.com/search?q=src/create-did-with-controller.ts) (Run: `npm run poc:create-did-with-controller`) - Demonstrates DID creation with a single controller.
-      * [`Remove Service and Method`](https://www.google.com/search?q=src/remove-service-and-method.ts) (Run: `npm run poc:remove-service-and-method`) - Demonstrates updating a DID by removing services and verification methods.
-      * [`Deactivate DID (Self)`](https://www.google.com/search?q=src/deactivate-did-self.ts) (Run: `npm run poc:deactivate-did-self`) - Demonstrates deactivating a DID by its own controller.
+      * `src/controller.ts` (Run: `npm run poc:controller`) - Demonstrates basic single-controller DID operations.
+      * `src/create-did-with-controller.ts` (Run: `npm run poc:create-did-with-controller`) - Demonstrates DID creation with a single controller.
+      * `src/remove-service-and-method.ts` (Run: `npm run poc:remove-service-and-method`) - Demonstrates updating a DID by removing services and verification methods.
+      * `src/deactivate-did-self.ts` (Run: `npm run poc:deactivate-did-self`) - Demonstrates deactivating a DID by its own controller.
 
 #### 2\. Multi-Controller DID Operations
 
@@ -72,8 +91,9 @@ This PoC will validate the following Hedera DID Method v2.0 features:
       * Updates fail without sufficient controller signatures.
       * Resolved documents reflect multi-controller permissions.
   - **Relevant PoC(s)**:
-      * [`Update DID with Multiple Controllers`](https://www.google.com/search?q=src/update-did-with-multiple-controller.ts) (Run: `npm run poc:update-did-with-multiple-controller`) - Demonstrates DID creation with multiple controllers and subsequent updates.
-      * [`Deactivate DID (Multi-Controller)`](https://www.google.com/search?q=src/deactivate-did-multi-controller.ts) (Run: `npm run poc:deactivate-did-multi-controller`) - Demonstrates deactivating a DID with multiple controllers.
+      * `src/multi-controller.ts` (Run: `npm run poc:multi-controller`) - Demonstrates basic multi-controller DID operations.
+      * `src/update-did-with-multiple-controller.ts` (Run: `npm run poc:update-did-with-multiple-controller`) - Demonstrates DID creation with multiple controllers and subsequent updates.
+      * `src/deactivate-did-multi-controller.ts` (Run: `npm run poc:deactivate-did-multi-controller`) - Demonstrates deactivating a DID with multiple controllers.
 
 #### 3\. Key Rotation
 
@@ -99,7 +119,7 @@ This PoC will validate the following Hedera DID Method v2.0 features:
       * Verification methods are resolvable and verifiable.
       * Signatures pass cryptographic validation.
   - **Relevant PoC(s)**:
-      * [`Update DID with JWK Verification Method`](https://www.google.com/search?q=src/update-did-with-jwkVerificationMethod.ts) (Run: `npm run poc:jwk-verification-method`) - Demonstrates adding a `JWK`-based verification method.
+      * `src/update-did-with-jwkVerificationMethod.ts` (Run: `npm run poc:jwk-verification-method`) - Demonstrates adding a `JWK`-based verification method.
 
 ### Validation Methodology
 
