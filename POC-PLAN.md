@@ -28,22 +28,21 @@ This PoC will validate the following Hedera DID Method v2.0 features:
 1.  **Functional Validation**:
     * DID documents correctly resolve after all operations (creation, updates, deactivation, **owner transfer, revocation**).
     * Key rotation processes successfully without disrupting existing DID references or resolution.
-    * Verification methods (**including `Multikey` and `JsonWebKey2020`**) are correctly implemented and cryptographically verifiable.
-    * Controller permissions and signature thresholds (including generic and **BLS-based**) are enforced as expected.
-    * **DID ownership transfer is secure and verifiable.**
-    * **DID revocation is permanent and clearly reflected.**
-    * **BLS-based threshold signature schemes are correctly implemented, enabling m-of-n control over DIDs, with verifiable aggregated signatures.**
+    * Verification methods (**including `Multikey` and `JsonWebKey2020`**) are correctly implemented and cryptographically verifiable through manual inspection and tool-assisted analysis.
+    * Controller permissions and signature thresholds (including generic and **BLS-based**) are enforced as expected, confirmed via manual testing.
+    * **DID ownership transfer is secure and verifiable through manual checks.**
+    * **DID revocation is permanent and clearly reflected, as verified manually.**
+    * **BLS-based threshold signature schemes are correctly implemented, enabling m-of-n control over DIDs, with verifiable aggregated signatures confirmed manually.**
 2.  **Performance Metrics**:
-    * DID operations (creation, update, resolution, deactivation) complete within acceptable latency parameters (e.g., under 5 seconds for Hedera consensus finality).
+    * DID operations (creation, update, resolution, deactivation) complete within acceptable latency parameters (e.g., under 5 seconds for Hedera consensus finality), observed during manual execution.
 3.  **Compliance**:
-    * All implemented features pass automated tests benchmarked against the Hedera DID Method v2.0 specification.
+    * All implemented features, upon manual verification, demonstrate alignment with the Hedera DID Method v2.0 specification.
 
 ### Technical Approach
 
 1.  **Hedera Hashgraph SDK**: Utilize the official Hedera Hashgraph SDK for all DID document transactions on the Hedera network.
 2.  **TypeScript/Node.js**: Develop PoC logic in `TypeScript` with `Node.js` for type safety and modularity.
-3.  **Test Framework**: Employ `Jest` or `Mocha` as the test framework for unit and integration tests.
-4.  **Local Network**: Deploy and utilize a local Hedera testnet environment for validation.
+3.  **Local Network**: Deploy and utilize a local Hedera testnet environment for validation.
 
 ### Dependencies
 
@@ -175,5 +174,4 @@ This PoC will validate the following Hedera DID Method v2.0 features:
 
 ### Validation Methodology
 
-1.  **Automated Tests**: Implement and execute unit tests for individual functions and modules (e.g., key generation, signature validation, key rotation logic) and integration tests for end-to-end DID lifecycle operations.
-2.  **Manual Verification**: Manually inspect resolved DID documents for structural correctness and compliance with the Hedera DID Method v2.0 specification. Use external cryptographic tools (e.g., `jose` libraries, online JWT debuggers) to validate signatures and key formats.
+1.  **Manual Verification**: Manually inspect resolved DID documents for structural correctness and compliance with the Hedera DID Method v2.0 specification. Use external cryptographic tools (e.g., `jose` libraries, online JWT debuggers, BLS signature utilities) to validate signatures, keys, and threshold mechanisms.
