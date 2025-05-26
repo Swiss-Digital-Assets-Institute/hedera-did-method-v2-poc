@@ -2,13 +2,13 @@
 
 ### Description
 
-This Proof-of-Concept (PoC) plan outlines the validation of key features within the Hedera DID Method v2.0 specification, specifically targeting the **controller and proof model (including ownership transfer, revocation, and threshold control)**, **key rotation**, and **specified verification methods (including JWK and BLS for threshold signatures)**. It details the PoC's objectives, scope, technical approach, and validation methods.
+This Proof-of-Concept (PoC) plan outlines the validation of key features within the Hedera DID Method v2.0 specification, specifically targeting the **controller and proof model (including ownership transfer, revocation, and threshold control)**, **key rotation**, and **specified verification methods (including `Multikey`, `JsonWebKey2020`, and BLS for threshold signatures)**. It details the PoC's objectives, scope, technical approach, and validation methods.
 
 ### Objectives
 
 1.  **Validate the Controller and Proof Model**: Ensure the DID method effectively supports single and multi-controller operations, **DID ownership transfer, DID revocation,** and enforceable permissions, including **threshold control**.
 2.  **Demonstrate Secure Key Rotation**: Illustrate a secure key rotation process for controller keys without disrupting DID resolution.
-3.  **Verify Verification Methods**: Test the implementation and functionality of specified verification methods (e.g., `JWK`, `ECDSA`, and **BLS keys for threshold signature schemes**).
+3.  **Verify Verification Methods**: Test the implementation and functionality of specified verification methods (e.g., **`Multikey`, `JsonWebKey2020`,** and BLS keys for threshold signature schemes).
 4.  **Ensure Compliance**: Confirm all implementations align with the Hedera DID Method v2.0 specification.
 
 ### Scope
@@ -21,14 +21,14 @@ This PoC will validate the following Hedera DID Method v2.0 features:
 * **DID Owner Transfer**: Mechanisms for securely transferring primary DID control.
 * **DID Revocation**: Processes for permanently revoking a DID.
 * **BLS-based Threshold Signature Control**: Using BLS keys for m-of-n signature control over DID operations.
-* **Verification Methods**: Implementation and validation of `JWK`, BLS keys for threshold control, and other specified verification methods.
+* **Verification Methods**: Implementation and validation of **`Multikey`, `JsonWebKey2020`,** BLS keys for threshold control, and other specified verification methods.
 
 ### Success Criteria
 
 1.  **Functional Validation**:
     * DID documents correctly resolve after all operations (creation, updates, deactivation, **owner transfer, revocation**).
     * Key rotation processes successfully without disrupting existing DID references or resolution.
-    * Verification methods are correctly implemented and cryptographically verifiable.
+    * Verification methods (**including `Multikey` and `JsonWebKey2020`**) are correctly implemented and cryptographically verifiable.
     * Controller permissions and signature thresholds (including generic and **BLS-based**) are enforced as expected.
     * **DID ownership transfer is secure and verifiable.**
     * **DID revocation is permanent and clearly reflected.**
@@ -49,7 +49,7 @@ This PoC will validate the following Hedera DID Method v2.0 features:
 
 1.  **Hedera Testnet Access**: Requires a local or testnet Hedera network with funded accounts.
 2.  **SDK Updates**: Ensure compatibility with the latest Hedera SDK version.
-3.  **Cryptographic Libraries**: Utilize robust cryptographic libraries for handling `JWK`, **BLS signature aggregation**, and other specified verification methods (e.g., `jose` for `JWK`).
+3.  **Cryptographic Libraries**: Utilize robust cryptographic libraries for handling **`Multikey` representations, `JsonWebKey2020` (e.g., using `jose`),** BLS signature aggregation, and other specified verification methods.
 
 ### PoC Subtasks
 
@@ -104,19 +104,23 @@ This PoC will validate the following Hedera DID Method v2.0 features:
 * **Relevant PoC(s)**:
     * (No specific PoC script for key rotation was listed. This subtask will require development or identification of relevant test scripts.)
 
-#### 4. Verification Methods
+#### 4. Verification Methods (featuring `Multikey` and `JsonWebKey2020`)
 
-* **Objective**: Validate the implementation, functionality, and cryptographic verifiability of specified verification methods (e.g., `JWK`).
+* **Objective**: Validate the implementation, functionality, and cryptographic verifiability of `Multikey` and `JsonWebKey2020` verification methods.
 * **Steps**:
-    1.  Add a `JWK` (JSON Web Key) verification method to an existing DID document.
-    2.  Create a signature using the private key corresponding to the added `JWK` verification method.
-    3.  Verify the signature against the public key in the `JWK` verification method retrieved from the resolved DID document.
-    4.  Repeat steps 1-3 for other specified verification methods (e.g., `EcdsaSecp256k1RecoveryMethod2020`, if applicable).
+    1.  Add a `JsonWebKey2020` verification method to an existing DID document (e.g., for an `ES256K` key).
+    2.  Create a signature using the private key corresponding to the `JsonWebKey2020` method.
+    3.  Verify the signature against the public key in the `JsonWebKey2020` method retrieved from the resolved DID document.
+    4.  Add a `Multikey` verification method to a DID document, representing a public key in `publicKeyMultibase` format.
+    5.  Resolve the DID and verify the correct interpretation of the `Multikey` public key material.
+    6.  If the key material in `Multikey` corresponds to a signature algorithm also testable (e.g., if it's the same key as used in step 1, just differently encoded), attempt a signature verification using the key resolved via the `Multikey` method.
 * **Success Criteria**:
-    * Specified verification methods can be successfully added to and resolved from a DID document.
-    * Signatures created using the private key material associated with a verification method are cryptographically verifiable against the public key material in the DID document.
+    * `Multikey` and `JsonWebKey2020` verification methods can be successfully added to, resolved from, and correctly interpreted from a DID document.
+    * Public keys are correctly represented in both `JsonWebKey2020` (JWK format) and `Multikey` (`publicKeyMultibase` format).
+    * Signatures created using keys associated with `JsonWebKey2020` are cryptographically verifiable.
+    * Keys retrieved via `Multikey` can be used for cryptographic operations as appropriate to the key type.
 * **Relevant PoC(s)**:
-    * `src/update-did-with-jwkVerificationMethod.ts` (Run: `npm run poc:jwk-verification-method`) - Demonstrates adding a `JWK`-based verification method.
+    * (Placeholder: `src/verification-methods.ts` Run: `npm run poc:verification-methods`) - Demonstrates adding and using `Multikey` and `JsonWebKey2020` verification methods.
 
 #### 5. DID Owner Transfer
 
