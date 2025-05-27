@@ -9,13 +9,14 @@ import {
   RelationShipProperties,
   Service,
 } from "@swiss-digital-assets-institute/core";
-import { InternalEd25519Signer } from "./ed25519-signer";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
+import { Signer } from "./signer-types";
+import { InternalECDSASigner } from "./ecdsa-signer";
 
 interface CreateDidAndPublishArgs {
   client: Client;
-  privateKey: PrivateKey;
   controllers?: string[];
+  signer: Signer;
   verificationMethodId: (did: string) => string;
   partialDidDocument: (did: string) => Partial<
     Record<RelationShipProperties, (VerificationMethod | string)[]> & {
@@ -27,8 +28,8 @@ interface CreateDidAndPublishArgs {
 
 export async function createDidAndPublish({
   client,
-  privateKey,
   controllers,
+  signer,
   partialDidDocument,
   verificationMethodId,
 }: CreateDidAndPublishArgs) {
@@ -53,7 +54,9 @@ export async function createDidAndPublish({
   const didDocument: JsonLdDIDDocument = {
     "@context": [
       "https://www.w3.org/ns/did/v1",
-      "https://w3id.org/security/suites/ed25519-2020/v1",
+      signer instanceof InternalECDSASigner
+        ? "https://w3id.org/security/multikey/v1"
+        : "https://w3id.org/security/suites/ed25519-2020/v1",
     ],
     id: did,
     controller: controllers ?? [did],
@@ -66,7 +69,6 @@ export async function createDidAndPublish({
     did,
     didDocument,
   };
-  const signer = new InternalEd25519Signer(privateKey);
   const signedCreatePayload = await signer.createProof(createPayload, {
     proofPurpose: "capabilityInvocation",
     verificationMethod: verificationMethodId(did),

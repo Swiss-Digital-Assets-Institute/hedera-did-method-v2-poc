@@ -5,6 +5,7 @@ import { inspect } from "util";
 import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { updateDidAndPublish } from "./shared/update-did";
+import { InternalEd25519Signer } from "./shared/ed25519-signer";
 
 interface Controller {
   did: string;
@@ -31,7 +32,7 @@ async function run() {
 
     const { did } = await createDidAndPublish({
       client,
-      privateKey,
+      signer: new InternalEd25519Signer(privateKey),
       partialDidDocument: (did) => ({
         capabilityInvocation: [
           {
@@ -62,7 +63,7 @@ async function run() {
 
   const { did: didWithControllers, topicId } = await createDidAndPublish({
     client,
-    privateKey: controllers[0].privateKey,
+    signer: new InternalEd25519Signer(controllers[0].privateKey),
     controllers: controllers.map((c) => c.did),
     partialDidDocument: (did) => ({
       verificationMethod: [
@@ -112,7 +113,7 @@ async function run() {
     client,
     did: didWithControllers,
     topicId,
-    privateKey: controllers[1].privateKey,
+    signer: new InternalEd25519Signer(controllers[1].privateKey),
     verificationMethodId: `${didWithControllers}#controller-1`,
     didDocument: firstDidState,
     updateFn: (doc) => {
@@ -169,7 +170,7 @@ async function run() {
 
   await createDidAndPublish({
     client,
-    privateKey: notAuthorizedPrivateKey,
+    signer: new InternalEd25519Signer(notAuthorizedPrivateKey),
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
@@ -187,7 +188,7 @@ async function run() {
     client,
     did: didWithControllers,
     topicId,
-    privateKey: notAuthorizedPrivateKey,
+    signer: new InternalEd25519Signer(notAuthorizedPrivateKey),
     verificationMethodId: `${didWithControllers}#controller-1`,
     didDocument: secondDidState,
     updateFn: (doc) => {

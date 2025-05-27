@@ -32,6 +32,7 @@ Below is a list of currently available Proof of Concept (PoC) implementations in
 | DID Key Rotation                        | `src/did-key-rotation.ts`                        | Demonstrates rotating the main authentication key for a DID and making updates with the new key.     | `npm run poc:did-key-rotation`                    |
 | Embedded DID Controller                 | `src/embedded-did-controller.ts`                 | Demonstrates a DID where the controller's verification method is embedded in the DID document.       | `npm run poc:embedded-did-controller`             |
 | Referenced DID Controller               | `src/referenced-did-controller.ts`               | Demonstrates a DID where the controller's verification method is referenced from another DID.        | `npm run poc:referenced-did-controller`           |
+| DID with Multikey Verification Method   | `src/did-with-multikey-vm.ts`                    | Create a DID using a Multikey verification method and assert the DID document state.                 | `npm run poc:did-with-multikey-vm`                |
 
 #### How to Run
 
@@ -57,4 +58,5 @@ Below is a list of currently available Proof of Concept (PoC) implementations in
    npm run poc:did-key-rotation
    npm run poc:embedded-did-controller
    npm run poc:referenced-did-controller
+   npm run poc:did-with-multikey-vm
    ```

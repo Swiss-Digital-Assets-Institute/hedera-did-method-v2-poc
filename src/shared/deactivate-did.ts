@@ -1,15 +1,11 @@
-import {
-  Client,
-  PrivateKey,
-  TopicMessageSubmitTransaction,
-} from "@hashgraph/sdk";
-import { InternalEd25519Signer } from "./ed25519-signer";
+import { Client, TopicMessageSubmitTransaction } from "@hashgraph/sdk";
+import { Signer } from "./signer-types";
 
 interface DeactivateDidAndPublishArgs {
   client: Client;
   did: string;
   topicId: string;
-  privateKey: PrivateKey;
+  signer: Signer;
   verificationMethodId: string;
 }
 
@@ -17,7 +13,7 @@ export async function deactivateDidAndPublish({
   client,
   did,
   topicId,
-  privateKey,
+  signer,
   verificationMethodId,
 }: DeactivateDidAndPublishArgs) {
   const deactivatePayload = {
@@ -26,7 +22,6 @@ export async function deactivateDidAndPublish({
     did,
   };
 
-  const signer = new InternalEd25519Signer(privateKey);
   const signedDeactivatePayload = await signer.createProof(deactivatePayload, {
     proofPurpose: "capabilityInvocation",
     verificationMethod: verificationMethodId,

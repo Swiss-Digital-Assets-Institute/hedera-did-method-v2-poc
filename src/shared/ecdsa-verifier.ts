@@ -11,31 +11,34 @@ import { hashData } from "./signer-utils";
 import { canonizeJsonDocument } from "./signer-utils";
 
 // https://www.rfc-editor.org/rfc/rfc8037.html
-interface Ed25519JWK {
-  kty: "OKP";
-  crv: "Ed25519";
-  alg?: "EdDSA";
+interface EcdsaJWK {
+  kty: "EC";
+  crv: "P-256" | "P-384" | "P-512";
+  alg?: "ECDSA";
   // Public key
   x: string;
+  y: string;
   kid?: string;
   key_ops?: Array<"sign" | "verify">;
   use?: "sig";
 }
 
-export class InternalEd25519Verifier {
+export class InternalECDSAVerifier {
   private publicKey: PublicKey;
 
-  constructor(publicKey: string | PublicKey | Ed25519JWK) {
+  constructor(publicKey: string | PublicKey | EcdsaJWK) {
     if (typeof publicKey === "string") {
-      this.publicKey = PublicKey.fromStringED25519(publicKey);
+      this.publicKey = PublicKey.fromStringECDSA(publicKey);
     } else if (publicKey instanceof PublicKey) {
-      if (publicKey["_key"]._type !== "ED25519") {
+      if (publicKey["_key"]._type !== "secp256k1") {
         throw new Error("Invalid public key");
       }
       this.publicKey = publicKey;
     } else {
-      this.publicKey = PublicKey.fromBytesED25519(
-        Buffer.from(publicKey.x, "base64url")
+      const xBytes = Buffer.from(publicKey.x, "base64url");
+      const yBytes = Buffer.from(publicKey.y, "base64url");
+      this.publicKey = PublicKey.fromBytesECDSA(
+        Buffer.concat([Buffer.from([0x04]), xBytes, yBytes])
       );
     }
   }
@@ -81,12 +84,13 @@ export class InternalEd25519Verifier {
     const canonicalProofConfig = await canonizeJsonDocument(proofOptions);
     const canonicalDocument = await canonizeJsonDocument(unsecuredDocument);
 
-    const canonicalProofConfigHash = await hashData(canonicalProofConfig);
-    const canonicalDocumentHash = await hashData(canonicalDocument);
+    // Should be based on key size: 256 or 384
+    const canonicalProofConfigHash = await hashData(canonicalProofConfig, 256);
+    const canonicalDocumentHash = await hashData(canonicalDocument, 256);
 
     const hashedData = Buffer.concat([
-      canonicalProofConfigHash,
       canonicalDocumentHash,
+      canonicalProofConfigHash,
     ]);
 
     const verified = this.publicKey.verify(hashedData, proofBytes);

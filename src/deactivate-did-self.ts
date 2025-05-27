@@ -4,6 +4,7 @@ import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { deactivateDidAndPublish } from "./shared/deactivate-did";
 import assert from "assert";
+import { InternalEd25519Signer } from "./shared/ed25519-signer";
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -20,7 +21,7 @@ async function run() {
   // 1. Create DID
   const { did, topicId } = await createDidAndPublish({
     client,
-    privateKey,
+    signer: new InternalEd25519Signer(privateKey),
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
@@ -39,7 +40,7 @@ async function run() {
     client,
     did,
     topicId,
-    privateKey,
+    signer: new InternalEd25519Signer(privateKey),
     verificationMethodId: `${did}#auth`,
   });
 
