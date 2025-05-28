@@ -37,7 +37,7 @@ export class InternalECDSASigner extends InternalECDSAVerifier {
   constructor(privateKey: string | PrivateKey | EcdsaJWK) {
     let key: PrivateKey;
     if (typeof privateKey === "string") {
-      key = PrivateKey.fromStringED25519(privateKey);
+      key = PrivateKey.fromStringECDSA(privateKey);
     } else if (privateKey instanceof PrivateKey) {
       // We should only support P-256 or P-384, not support by @hashgraph/sdk
       if (privateKey["_key"]._type !== "secp256k1") {
@@ -45,7 +45,7 @@ export class InternalECDSASigner extends InternalECDSAVerifier {
       }
       key = privateKey;
     } else if (privateKey.d) {
-      key = PrivateKey.fromBytesED25519(Buffer.from(privateKey.d, "base64url"));
+      key = PrivateKey.fromBytesECDSA(Buffer.from(privateKey.d, "base64url"));
     } else {
       throw new Error("Invalid private key");
     }
