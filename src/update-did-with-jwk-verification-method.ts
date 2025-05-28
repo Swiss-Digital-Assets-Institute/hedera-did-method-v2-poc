@@ -4,6 +4,7 @@ import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { updateDidAndPublish } from "./shared/update-did";
 import assert from "assert";
+import { InternalEd25519Signer } from "./shared/ed25519-signer";
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -20,7 +21,7 @@ async function run() {
   // 1. Create DID
   const { did, topicId, didDocument } = await createDidAndPublish({
     client,
-    privateKey: authPrivateKey,
+    signer: new InternalEd25519Signer(authPrivateKey),
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
@@ -45,11 +46,11 @@ async function run() {
   const secondPrivateKey = PrivateKey.generateED25519();
   const secondPublicKey = secondPrivateKey.publicKey;
 
-  const updatedDidDocument = await updateDidAndPublish({
+  await updateDidAndPublish({
     client,
     did,
     topicId,
-    privateKey: authPrivateKey,
+    signer: new InternalEd25519Signer(authPrivateKey),
     verificationMethodId: `${did}#auth`,
     didDocument,
     updateFn: (doc) => {

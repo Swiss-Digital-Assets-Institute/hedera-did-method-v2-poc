@@ -7,6 +7,9 @@ export const canonizeJsonDocument = async (
   return canonicalize(document);
 };
 
-export const hashData = async (data: string): Promise<Uint8Array> => {
-  return createHash("sha256").update(data).digest();
+export const hashData = async (
+  data: string,
+  bits: 256 | 384 | 512 = 256
+): Promise<Uint8Array> => {
+  return createHash(`sha${bits}`).update(data).digest();
 };

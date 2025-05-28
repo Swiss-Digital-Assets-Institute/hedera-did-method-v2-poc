@@ -3,7 +3,7 @@ import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import assert from "assert";
-import { InternalEd25519Signer } from "./shared/ed25519-signer";
+import { InternalECDSASigner } from "./shared/ecdsa-signer";
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -11,21 +11,21 @@ async function run() {
     process.env.HEDERA_TESTNET_PRIVATE_KEY ?? ""
   );
 
-  const authPrivateKey = PrivateKey.generateED25519();
+  const authPrivateKey = PrivateKey.generateECDSA();
   const authPublicKey = authPrivateKey.publicKey;
   const authPublicKeyMultibase = KeysUtility.fromBytes(
     authPublicKey.toBytesRaw()
-  ).toMultibase();
+  ).toMultibase("base58btc");
 
   // 1. Create DID
   const { did, topicId } = await createDidAndPublish({
     client,
-    signer: new InternalEd25519Signer(authPrivateKey),
+    signer: new InternalECDSASigner(authPrivateKey),
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
           id: `${did}#auth`,
-          type: "Ed25519VerificationKey2020",
+          type: "Multikey",
           controller: did,
           publicKeyMultibase: authPublicKeyMultibase,
         },
@@ -45,14 +45,14 @@ async function run() {
   assert.deepStrictEqual(firstDidState, {
     "@context": [
       "https://www.w3.org/ns/did/v1",
-      "https://w3id.org/security/suites/ed25519-2020/v1",
+      "https://w3id.org/security/multikey/v1",
     ],
     id: did,
     controller: [did],
     capabilityInvocation: [
       {
         id: `${did}#auth`,
-        type: "Ed25519VerificationKey2020",
+        type: "Multikey",
         controller: did,
         publicKeyMultibase: authPublicKeyMultibase,
       },

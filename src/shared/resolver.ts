@@ -2,7 +2,8 @@ import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import { TopicReaderHederaClient } from "@swiss-digital-assets-institute/resolver";
 import { InternalEd25519Verifier } from "./ed25519-verifier";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
-import { Proof, SecuredDataDocument } from "./signer-types";
+import { Proof, SecuredDataDocument, Verifier } from "./signer-types";
+import { InternalECDSAVerifier } from "./ecdsa-verifier";
 
 interface ResolveDidArgs {
   did: string;
@@ -180,25 +181,45 @@ class DidResolver {
       return null;
     }
 
-    let publicKeyEntry: any;
+    let verifier: Verifier;
 
     if (
       foundedVerificationMethod.type === "Ed25519VerificationKey2020" &&
       foundedVerificationMethod.publicKeyMultibase
     ) {
-      publicKeyEntry = KeysUtility.fromMultibase(
-        foundedVerificationMethod.publicKeyMultibase
-      ).toDerString();
+      verifier = new InternalEd25519Verifier(
+        KeysUtility.fromMultibase(
+          foundedVerificationMethod.publicKeyMultibase
+        ).toPublicKey()
+      );
     } else if (
       foundedVerificationMethod.type === "JsonWebKey2020" &&
       foundedVerificationMethod.publicKeyJwk
     ) {
-      publicKeyEntry = foundedVerificationMethod.publicKeyJwk;
+      if (foundedVerificationMethod.publicKeyJwk.kty === "EC") {
+        verifier = new InternalECDSAVerifier(
+          foundedVerificationMethod.publicKeyJwk as any
+        );
+      } else if (foundedVerificationMethod.publicKeyJwk.kty === "OKP") {
+        verifier = new InternalEd25519Verifier(
+          foundedVerificationMethod.publicKeyJwk as any
+        );
+      } else {
+        throw new Error("Invalid verification method");
+      }
+    } else if (
+      foundedVerificationMethod.type === "Multikey" &&
+      foundedVerificationMethod.publicKeyMultibase
+    ) {
+      verifier = new InternalECDSAVerifier(
+        KeysUtility.fromMultibase(
+          foundedVerificationMethod.publicKeyMultibase
+        ).toPublicKey()
+      );
     } else {
       throw new Error("Invalid verification method");
     }
 
-    const verifier = new InternalEd25519Verifier(publicKeyEntry);
     const { verified, verifiedDocument } = await verifier.verifyProof(
       message as unknown as SecuredDataDocument
     );

@@ -4,6 +4,7 @@ import assert from "assert";
 import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { deactivateDidAndPublish } from "./shared/deactivate-did";
+import { InternalEd25519Signer } from "./shared/ed25519-signer";
 
 interface Controller {
   did: string;
@@ -27,7 +28,7 @@ async function run() {
 
   const { did: controllerDid } = await createDidAndPublish({
     client,
-    privateKey: controllerPrivateKey,
+    signer: new InternalEd25519Signer(controllerPrivateKey),
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
@@ -50,7 +51,7 @@ async function run() {
 
   const { did: didWithControllers, topicId } = await createDidAndPublish({
     client,
-    privateKey: controllerPrivateKey,
+    signer: new InternalEd25519Signer(privateKey),
     controllers: [controllerDid],
     partialDidDocument: (did) => ({
       verificationMethod: [
@@ -104,7 +105,7 @@ async function run() {
     client,
     did: didWithControllers,
     topicId,
-    privateKey: controllerPrivateKey,
+    signer: new InternalEd25519Signer(controllerPrivateKey),
     verificationMethodId: `${didWithControllers}#controller`,
   });
 

@@ -4,6 +4,7 @@ import assert from "assert";
 import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { updateDidAndPublish } from "./shared/update-did";
+import { InternalEd25519Signer } from "./shared/ed25519-signer";
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -19,7 +20,7 @@ async function run() {
 
   const { did: controllerDid } = await createDidAndPublish({
     client,
-    privateKey: controllerPrivateKey,
+    signer: new InternalEd25519Signer(controllerPrivateKey),
     partialDidDocument: (did) => ({
       capabilityInvocation: [
         {
@@ -36,7 +37,7 @@ async function run() {
   // 2. Create a DID with the controller
   const { did: subjectDid, topicId } = await createDidAndPublish({
     client,
-    privateKey: controllerPrivateKey,
+    signer: new InternalEd25519Signer(controllerPrivateKey),
     controllers: [controllerDid],
     partialDidDocument: (did) => ({
       capabilityInvocation: [
@@ -74,7 +75,7 @@ async function run() {
     client,
     did: subjectDid,
     topicId,
-    privateKey: controllerPrivateKey,
+    signer: new InternalEd25519Signer(controllerPrivateKey),
     verificationMethodId: `${subjectDid}#controller-0`,
     didDocument: firstDidState,
     updateFn: (doc) => {
