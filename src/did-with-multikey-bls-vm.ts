@@ -28,21 +28,17 @@ async function run() {
     authPublicKey.toBytesRaw()
   ).toMultibase();
 
-  const privateKeys = [
-    bls.utils.randomPrivateKey(),
-    bls.utils.randomPrivateKey(),
-    bls.utils.randomPrivateKey(),
-    bls.utils.randomPrivateKey(),
-  ];
+  const privateKey = bls.utils.randomPrivateKey();
 
-  const aggregatedKey = bls.aggregatePublicKeys(
-    privateKeys.map((k) =>
-      bls.G1.ProjectivePoint.BASE.multiply(os2ip(k)).toRawBytes()
-    )
-  );
+  const g2PublicKey = bls.G2.ProjectivePoint.BASE.multiply(
+    os2ip(privateKey)
+  ).toRawBytes(true);
+  const g2PublicKeyBase58 = KeysUtility.fromBytes(g2PublicKey).toBase58();
 
-  const bbsPublicKeyMultibase =
-    KeysUtility.fromBytes(aggregatedKey).toMultibase("base58btc");
+  const g1PublicKey = bls.G1.ProjectivePoint.BASE.multiply(
+    os2ip(privateKey)
+  ).toRawBytes(true);
+  const g1PublicKeyBase58 = KeysUtility.fromBytes(g1PublicKey).toBase58();
 
   // 1. Create DID
   const { did, topicId } = await createDidAndPublish({
@@ -59,10 +55,16 @@ async function run() {
       ],
       verificationMethod: [
         {
-          id: `${did}#bbs`,
-          type: "Multikey",
+          id: `${did}#key-0`,
+          type: "Bls12381G1Key2020",
           controller: did,
-          publicKeyMultibase: bbsPublicKeyMultibase,
+          publicKeyBase58: g1PublicKeyBase58,
+        },
+        {
+          id: `${did}#key-1`,
+          type: "Bls12381G2Key2020",
+          controller: did,
+          publicKeyBase58: g2PublicKeyBase58,
         },
       ],
       service: [
@@ -94,10 +96,16 @@ async function run() {
     ],
     verificationMethod: [
       {
-        id: `${did}#bbs`,
-        type: "Multikey",
+        id: `${did}#key-0`,
+        type: "Bls12381G1Key2020",
         controller: did,
-        publicKeyMultibase: bbsPublicKeyMultibase,
+        publicKeyBase58: g1PublicKeyBase58,
+      },
+      {
+        id: `${did}#key-1`,
+        type: "Bls12381G2Key2020",
+        controller: did,
+        publicKeyBase58: g2PublicKeyBase58,
       },
     ],
     service: [
