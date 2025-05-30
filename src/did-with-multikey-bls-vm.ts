@@ -30,14 +30,10 @@ async function run() {
 
   const privateKey = bls.utils.randomPrivateKey();
 
-  const g2PublicKey = bls.G2.ProjectivePoint.BASE.multiply(
-    os2ip(privateKey)
-  ).toRawBytes(true);
+  const g2PublicKey = bls.getPublicKeyForShortSignatures(privateKey);
   const g2PublicKeyBase58 = KeysUtility.fromBytes(g2PublicKey).toBase58();
 
-  const g1PublicKey = bls.G1.ProjectivePoint.BASE.multiply(
-    os2ip(privateKey)
-  ).toRawBytes(true);
+  const g1PublicKey = bls.getPublicKey(privateKey);
   const g1PublicKeyBase58 = KeysUtility.fromBytes(g1PublicKey).toBase58();
 
   // 1. Create DID

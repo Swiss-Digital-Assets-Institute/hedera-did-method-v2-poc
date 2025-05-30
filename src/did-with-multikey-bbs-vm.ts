@@ -36,9 +36,7 @@ async function run() {
   ];
 
   const aggregatedKey = bls.aggregatePublicKeys(
-    privateKeys.map((k) =>
-      bls.G1.ProjectivePoint.BASE.multiply(os2ip(k)).toRawBytes()
-    )
+    privateKeys.map(bls.getPublicKey)
   );
 
   const bbsPublicKeyMultibase =
