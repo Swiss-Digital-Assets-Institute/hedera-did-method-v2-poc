@@ -7,15 +7,6 @@ import assert from "assert";
 import { InternalEd25519Signer } from "./shared/ed25519-signer";
 import { inspect } from "util";
 
-function os2ip(bytes: Uint8Array): bigint {
-  let result = 0n;
-  for (let i = 0; i < bytes.length; i++) {
-    result <<= 8n;
-    result += BigInt(bytes[i]);
-  }
-  return result;
-}
-
 async function run() {
   const client = Client.forTestnet().setOperator(
     process.env.HEDERA_TESTNET_ACCOUNT_ID ?? "",
