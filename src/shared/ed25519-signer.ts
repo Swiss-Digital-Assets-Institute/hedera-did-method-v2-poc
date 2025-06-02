@@ -50,7 +50,6 @@ export class InternalEd25519Signer extends InternalEd25519Verifier {
 
     super(key.publicKey);
     this.key = key;
-    console.log(this.key["_key"]._type);
   }
 
   async createProof(

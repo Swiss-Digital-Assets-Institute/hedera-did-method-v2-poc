@@ -11,7 +11,8 @@
     "poc:did-controller-key-rotation": "tsx --env-file .env src/did-controller-key-rotation.ts",
     "poc:referenced-did-controller": "tsx --env-file .env src/referenced-did-controller.ts",
     "poc:embedded-did-controller": "tsx --env-file .env src/embedded-did-controller.ts",
-    "poc:did-with-multikey-vm": "tsx --env-file .env src/did-with-multikey-vm.ts"
+    "poc:did-with-multikey-vm": "tsx --env-file .env src/did-with-multikey-vm.ts",
+    "poc:did-with-multikey-bls-vm": "tsx --env-file .env src/did-with-multikey-bls-vm.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.62.0",
