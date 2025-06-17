@@ -7,7 +7,7 @@ The primary goal of the v2.0 specification is to fully align the `did:hedera` me
 ### Repository Contents
 
 This repository provides the following key resources:
-  - The [**PoC Plan**](https://github.com/Swiss-Digital-Assets-Institute/hashgraph-did-method-v2-poc/blob/main/POC-PLAN.md) that outlines the objectives, scope, and approach for these validation efforts.
+  - The [**PoC Plan**](./POC-PLAN.md) that outlines the objectives, scope, and approach for these validation efforts.
   - Runnable **Proof of Concept (PoC) implementations** designed to validate key v2.0 features, such as controller functionality, key rotation, and support for various verification methods.
   - The **evolving specification document** for the [Hedera DID Method v2.0](https://github.com/Swiss-Digital-Assets-Institute/did-method), which serves as the technical foundation for the PoCs.
   - (Eventually) Test vectors and schema definitions for v2.0.
