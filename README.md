@@ -1,24 +1,24 @@
-# Hedera DID Method v2.0: Specification & Proof of Concept
+# Hedera DID Method v2.0: Proof of Concept
 
-Welcome to the repository for the **Hedera DID Method v2.0**. This space serves as the central hub for the development and validation of the next iteration of decentralized identifiers on Hedera.
+Welcome\! This repository contains the **Proof of Concept (PoC)** implementations for the **[Hedera DID Method v2.0](https://github.com/Swiss-Digital-Assets-Institute/did-method)**. Its purpose is to demonstrate, test, and validate the core features of the v2.0 specification in a practical, hands-on manner.
 
-Our primary goal with v2.0 is to fully align the `did:hedera` method with W3C DID Core standards, particularly by implementing a robust controller-based authorization model secured by W3C Data Integrity proofs.
+The primary goal of the v2.0 specification is to fully align the `did:hedera` method with W3C DID Core standards by implementing a robust, controller-based authorization model secured by W3C Data Integrity proofs. These PoCs showcase how that can be achieved.
 
-**Inside this repository, you will find:**
+### Repository Contents
 
-- The **evolving specification document** for Hedera DID Method v2.0, detailing its architecture, operations, and security considerations.
-- Runnable **Proof of Concept (PoC) implementations** designed to validate key v2.0 features. These PoCs demonstrate practical application of the core mechanisms, including:
-  - Controller and multi-controller functionality.
-  - Key rotation procedures.
-  - Support for verification methods like `Multikey` and `JsonWebKey2020`.
-- The **PoC Plan** that outlines the objectives, scope, and approach for these validation efforts.
-- (Eventually) Test vectors and potentially schema definitions for v2.0.
+This repository provides the following key resources:
+  - The [**PoC Plan**](https://github.com/Swiss-Digital-Assets-Institute/hashgraph-did-method-v2-poc/blob/main/POC-PLAN.md) that outlines the objectives, scope, and approach for these validation efforts.
+  - Runnable **Proof of Concept (PoC) implementations** designed to validate key v2.0 features, such as controller functionality, key rotation, and support for various verification methods.
+  - The **evolving specification document** for the [Hedera DID Method v2.0](https://github.com/Swiss-Digital-Assets-Institute/did-method), which serves as the technical foundation for the PoCs.
+  - (Eventually) Test vectors and schema definitions for v2.0.
 
-We encourage you to explore the specification, examine the PoC plan, and run the PoC implementations (as they become available) to understand and contribute to the development of `did:hedera` v2.0.
+We encourage you to examine the PoC plan, run the PoC implementations, and review the specification to understand and contribute to the development of `did:hedera` v2.0.
+
+-----
 
 ### Available Proof of Concepts (PoCs)
 
-Below is a list of currently available Proof of Concept (PoC) implementations included in this repository. Each PoC demonstrates and validates key features of the `did:hedera` v2.0 method.
+Below is a list of the PoC implementations included in this repository. Each one demonstrates and validates key features of the `did:hedera` v2.0 method.
 
 | PoC Name                                   | Location                                         | Description                                                                                          | Run Command                                       |
 | ------------------------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -35,30 +35,26 @@ Below is a list of currently available Proof of Concept (PoC) implementations in
 | DID with Multikey Verification Method      | `src/did-with-multikey-vm.ts`                    | Create a DID using a Multikey verification method and assert the DID document state.                 | `npm run poc:did-with-multikey-vm`                |
 | DID with Multikey BLS Verification Methods | `src/did-with-multikey-bls-vm.ts`                | Create a DID using BLS12-381 G1 and G2 verification methods and assert the DID document state.       | `npm run poc:did-with-multikey-bls-vm`            |
 
-#### How to Run
+-----
 
-1. **Install dependencies:**  
-   Make sure you have installed all required packages (see `package.json`).
+### How to Run a PoC
 
-2. **Set up environment variables:**  
-   You need a Hedera Testnet account. Set the following environment variables:
+1.  **Install dependencies:** Make sure you have installed all required packages (see `package.json`).
 
-   - `HEDERA_TESTNET_ACCOUNT_ID`
-   - `HEDERA_TESTNET_PRIVATE_KEY`
+    ```bash
+    npm install
+    ```
 
-3. **Run a PoC:**
-   You can use the provided npm scripts for each PoC, for example:
-   ```bash
-   npm run poc:create-did-with-controller
-   npm run poc:update-did-with-multiple-controller
-   npm run poc:jwk-verification-method
-   npm run poc:remove-service-and-method
-   npm run poc:deactivate-did-self
-   npm run poc:deactivate-did-multi-controller
-   npm run poc:did-controller-key-rotation
-   npm run poc:did-key-rotation
-   npm run poc:embedded-did-controller
-   npm run poc:referenced-did-controller
-   npm run poc:did-with-multikey-vm
-   npm run poc:did-with-multikey-bls-vm
-   ```
+2.  **Set up environment variables:** You need a Hedera Testnet account. Copy the `.env.sample` file to a new file named `.env` and fill in your account details:
+
+    ```bash
+    HEDERA_TESTNET_ACCOUNT_ID=...
+    HEDERA_TESTNET_PRIVATE_KEY=...
+    ```
+
+3.  **Run a PoC:**
+    You can use the provided npm scripts for each PoC, for example:
+
+    ```bash
+    npm run poc:create-did-with-controller
+    ```
