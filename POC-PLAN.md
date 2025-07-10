@@ -148,7 +148,7 @@ The following subtasks will be executed to achieve the PoC objectives:
   - The transfer process strictly adheres to the mechanisms defined in the Hedera DID Method v2.0 for controller changes.
   - The resolved subject DID document accurately reflects the new controller DID.
 - **Relevant PoC(s)**:
-  - `src/did-transfer-ownership.ts` (Run: `npm run poc:did-transfer-ownership`)
+  - `src/did-transfer-controller.ts` (Run: `npm run poc:did-transfer-controller`)
 
 #### 6. Verification Methods (featuring `Multikey` and `JsonWebKey2020`)
 
