@@ -1,9 +1,9 @@
 import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import { TopicReaderHederaClient } from "@swiss-digital-assets-institute/resolver";
-import { InternalEd25519Verifier } from "./ed25519-verifier";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
-import { Proof, SecuredDataDocument, Verifier } from "./signer-types";
 import { InternalECDSAVerifier } from "./ecdsa-verifier";
+import { InternalEd25519Verifier } from "./ed25519-verifier";
+import { Proof, SecuredDataDocument, Verifier } from "./signer-types";
 
 interface ResolveDidArgs {
   did: string;
@@ -40,7 +40,7 @@ class DidResolver {
 
   async resolve() {
     // wait for 10s to ensure messages are available
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((r) => setTimeout(r, 10000));
 
     let messages = this.versionTime
       ? await this.topicReader.fetchFrom(this.topicId, "testnet", {
@@ -236,9 +236,18 @@ class DidResolver {
 
   private findVerificationMethod(
     didDocument: JsonLdDIDDocument,
-    verificationMethodId: string
+    verificationMethodId: string,
+    key: "verificationMethod" | "capabilityInvocation" = "capabilityInvocation"
   ): VerificationMethod | null {
-    for (const vm of didDocument.capabilityInvocation ?? []) {
+    for (const vm of didDocument[key] ?? []) {
+      if (typeof vm === "string" && vm === verificationMethodId) {
+        return this.findVerificationMethod(
+          didDocument,
+          verificationMethodId,
+          "verificationMethod"
+        );
+      }
+
       if (typeof vm !== "object" || !("id" in vm)) continue;
 
       if (vm.id === verificationMethodId) return vm;
