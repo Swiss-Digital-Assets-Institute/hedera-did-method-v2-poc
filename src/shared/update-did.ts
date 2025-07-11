@@ -38,7 +38,11 @@ export async function updateDidAndPublish({
     .setMessage(Buffer.from(JSON.stringify(signedUpdatePayload)))
     .execute(client);
 
-  await tx.getReceipt(client);
+  const submitReceipt = await tx.getReceipt(client);
 
-  return updatedDidDocument;
+  return {
+    didDocument: updatedDidDocument,
+    versionTime: signedUpdatePayload.proof.created,
+    versionId: submitReceipt.topicSequenceNumber?.toString(),
+  };
 }

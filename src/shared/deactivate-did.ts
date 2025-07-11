@@ -31,5 +31,10 @@ export async function deactivateDidAndPublish({
     .setMessage(Buffer.from(JSON.stringify(signedDeactivatePayload)))
     .execute(client);
 
-  await tx.getReceipt(client);
+  const submitReceipt = await tx.getReceipt(client);
+
+  return {
+    versionTime: signedDeactivatePayload.proof.created,
+    versionId: submitReceipt.topicSequenceNumber?.toString(),
+  };
 }

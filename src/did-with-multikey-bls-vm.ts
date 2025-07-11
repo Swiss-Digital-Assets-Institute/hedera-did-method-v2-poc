@@ -1,11 +1,11 @@
 import { Client, PrivateKey } from "@hashgraph/sdk";
-import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import { bls12_381 as bls } from "@noble/curves/bls12-381";
-import { resolveDid } from "./shared/resolver";
-import { createDidAndPublish } from "./shared/create-did";
+import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import assert from "assert";
-import { InternalEd25519Signer } from "./shared/ed25519-signer";
 import { inspect } from "util";
+import { createDidAndPublish } from "./shared/create-did";
+import { InternalEd25519Signer } from "./shared/ed25519-signer";
+import { resolveDid } from "./shared/resolver";
 
 async function run() {
   const client = Client.forTestnet().setOperator(

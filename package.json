@@ -13,7 +13,9 @@
     "poc:embedded-did-controller": "tsx --env-file .env src/embedded-did-controller.ts",
     "poc:did-with-multikey-vm": "tsx --env-file .env src/did-with-multikey-vm.ts",
     "poc:did-with-multikey-bls-vm": "tsx --env-file .env src/did-with-multikey-bls-vm.ts",
-    "poc:did-transfer-controller": "tsx --env-file .env src/did-transfer-controller.ts"
+    "poc:did-transfer-controller": "tsx --env-file .env src/did-transfer-controller.ts",
+    "poc:resolution-with-version-id": "tsx --env-file .env src/resolution-with-version-id.ts",
+    "poc:resolution-with-version-time": "tsx --env-file .env src/resolution-with-version-time.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.62.0",

@@ -179,7 +179,8 @@ The following subtasks will be executed to achieve the PoC objectives:
   - The validity or presence of a specific verification key can be accurately determined for a given point in time by resolving the corresponding DID document version.
   - The mechanism effectively demonstrates implicit key revocation through DID document updates and historical state lookup.
 - **Relevant PoC(s)**:
-  - `src/historical-key-validity.ts` (Run: `npm run poc:historical-key-validity`)
+  - `src/resolution-with-version-id.ts` (Run: `npm run poc:resolution-with-version-id`)
+  - `src/resolution-with-version-time.ts` (Run: `npm run poc:resolution-with-version-time`)
 
 #### 8. DID Deactivation
 
