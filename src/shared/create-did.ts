@@ -10,8 +10,8 @@ import {
   Service,
 } from "@swiss-digital-assets-institute/core";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
-import { Signer } from "./signer-types";
 import { InternalECDSASigner } from "./ecdsa-signer";
+import { Signer } from "./signer-types";
 
 interface CreateDidAndPublishArgs {
   client: Client;
@@ -78,11 +78,18 @@ export async function createDidAndPublish({
     .setTopicId(topicId)
     .setMessage(Buffer.from(JSON.stringify(signedCreatePayload)))
     .execute(client);
-  await submitTx.getReceipt(client);
+  const submitReceipt = await submitTx.getReceipt(client);
 
   return {
     did,
     topicId,
     didDocument,
+    // Just for PoC purposes
+    versionTime: new Date(
+      new Date(signedCreatePayload.proof.created).getTime() + 5000
+    ).toISOString(),
+    versionId: (
+      (submitReceipt.topicSequenceNumber?.toNumber() ?? 0) + 1
+    ).toString(),
   };
 }

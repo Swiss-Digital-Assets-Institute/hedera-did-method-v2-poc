@@ -1,17 +1,10 @@
 import { Client, PrivateKey } from "@hashgraph/sdk";
 import { KeysUtility } from "@swiss-digital-assets-institute/core";
 import assert from "assert";
-import { resolveDid } from "./shared/resolver";
 import { createDidAndPublish } from "./shared/create-did";
 import { deactivateDidAndPublish } from "./shared/deactivate-did";
 import { InternalEd25519Signer } from "./shared/ed25519-signer";
-
-interface Controller {
-  did: string;
-  privateKey: PrivateKey;
-  verificationMethodId: string;
-  publicKeyMultibase: string;
-}
+import { resolveDid } from "./shared/resolver";
 
 async function run() {
   const client = Client.forTestnet().setOperator(

@@ -1,10 +1,10 @@
 import { Client, PrivateKey } from "@hashgraph/sdk";
 import { KeysUtility } from "@swiss-digital-assets-institute/core";
-import { resolveDid } from "./shared/resolver";
-import { createDidAndPublish } from "./shared/create-did";
-import { updateDidAndPublish } from "./shared/update-did";
 import assert from "assert";
+import { createDidAndPublish } from "./shared/create-did";
 import { InternalEd25519Signer } from "./shared/ed25519-signer";
+import { resolveDid } from "./shared/resolver";
+import { updateDidAndPublish } from "./shared/update-did";
 
 async function run() {
   const client = Client.forTestnet().setOperator(
@@ -66,7 +66,7 @@ async function run() {
     topicId,
     signer: new InternalEd25519Signer(authPrivateKey),
     verificationMethodId: `${did}#auth`,
-    didDocument: updatedDidDocument,
+    didDocument: updatedDidDocument.didDocument,
     updateFn: (doc) => {
       return {
         ...doc,

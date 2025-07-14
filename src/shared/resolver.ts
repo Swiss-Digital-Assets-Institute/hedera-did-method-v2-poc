@@ -1,17 +1,22 @@
 import { KeysUtility } from "@swiss-digital-assets-institute/core";
-import { TopicReaderHederaClient } from "@swiss-digital-assets-institute/resolver";
 import { JsonLdDIDDocument, VerificationMethod } from "./did-types";
 import { InternalECDSAVerifier } from "./ecdsa-verifier";
 import { InternalEd25519Verifier } from "./ed25519-verifier";
 import { Proof, SecuredDataDocument, Verifier } from "./signer-types";
+import { TopicReaderHederaClient } from "./topic-reader";
 
 interface ResolveDidArgs {
   did: string;
   versionTime?: string;
+  versionId?: string;
 }
 
-export async function resolveDid({ did, versionTime }: ResolveDidArgs) {
-  const resolver = new DidResolver(did, versionTime);
+export async function resolveDid({
+  did,
+  versionTime,
+  versionId,
+}: ResolveDidArgs) {
+  const resolver = new DidResolver(did, { versionTime, versionId });
   return resolver.resolve();
 }
 
@@ -23,19 +28,26 @@ interface ParsedMessage {
   proof: Proof;
 }
 
+interface Options {
+  versionTime?: string;
+  versionId?: string;
+}
+
 class DidResolver {
   private readonly did: string;
   private readonly topicId: string;
   private readonly topicReader: TopicReaderHederaClient;
   private readonly versionTime?: string;
+  private readonly versionId?: string;
 
   private previousDidDocument: JsonLdDIDDocument | null = null;
 
-  constructor(did: string, versionTime?: string) {
+  constructor(did: string, { versionTime, versionId }: Options) {
     this.did = did;
     this.topicId = did.split("_")[1];
     this.topicReader = new TopicReaderHederaClient();
     this.versionTime = versionTime;
+    this.versionId = versionId;
   }
 
   async resolve() {
@@ -50,7 +62,7 @@ class DidResolver {
       : await this.topicReader.fetchAllToDate(this.topicId, "testnet");
 
     for (const message of messages) {
-      const parsed = this.parseMessage(message);
+      const parsed = this.parseMessage(message.content);
       if (!parsed) continue;
 
       const { operation } = parsed;
@@ -64,6 +76,10 @@ class DidResolver {
       } else if (operation === "deactivate") {
         const verifiedDocument = await this.processDeactivate(parsed);
         if (verifiedDocument) this.previousDidDocument = verifiedDocument;
+        break;
+      }
+
+      if (this.versionId && message.sequenceNumber === this.versionId) {
         break;
       }
     }
